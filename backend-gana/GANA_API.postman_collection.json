@@ -1,0 +1,902 @@
+{
+	"info": {
+		"_postman_id": "gana-backend-001",
+		"name": "PT. GANA Backend API",
+		"description": "Collection API Backend PT. GANA Business",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "001"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"admin@gana\",\"password\":\"password123\",\"role\":\"admin\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login endpoint - roles: admin, sales, owner, kepala_gudang, staff_gudang"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Server Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Check server and database status"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Alamat",
+			"item": [
+				{
+					"name": "Get All Alamat",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/alamat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"alamat"
+							]
+						},
+						"description": "Get all alamat bengkel"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Alamat",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_pelanggan\":1,\"label_alamat\":\"Kantor Pusat\",\"detail_alamat\":\"Jl. Merdeka No. 123\",\"kota_kab\":\"Makassar\",\"telp_bengkel\":\"08123456789\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/alamat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"alamat"
+							]
+						},
+						"description": "Add new alamat bengkel"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Alamat",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_pelanggan\":1,\"label_alamat\":\"Kantor Pusat Updated\",\"detail_alamat\":\"Jl. Merdeka No. 123 Blok A\",\"kota_kab\":\"Makassar\",\"telp_bengkel\":\"08129876543\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/alamat/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"alamat",
+								"1"
+							]
+						},
+						"description": "Update existing alamat - change ID in URL"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Alamat",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/alamat/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"alamat",
+								"1"
+							]
+						},
+						"description": "Delete alamat - change ID in URL"
+					},
+					"response": []
+				}
+			],
+			"description": "Alamat Bengkel Management"
+		},
+		{
+			"name": "Produk",
+			"item": [
+				{
+					"name": "Get All Produk",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/produk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"produk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Produk",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_kategori\":1,\"nama_produk\":\"Oli Motor Castrol\",\"harga_jual\":75000,\"harga_beli\":50000}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/produk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"produk"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Product Management"
+		},
+		{
+			"name": "Kategori",
+			"item": [
+				{
+					"name": "Get All Kategori",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kategori",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kategori"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Kategori",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nama_kategori\":\"Oli & Pelumas\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/kategori",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kategori"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Product Category"
+		},
+		{
+			"name": "Supplier",
+			"item": [
+				{
+					"name": "Get All Supplier",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/supplier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"supplier"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Supplier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nama_supplier\":\"PT Akses Motor\",\"alamat\":\"Jl. Industry No. 100\",\"kontak\":\"08123456789\",\"email\":\"info@akses.com\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/supplier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"supplier"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Supplier Management"
+		},
+		{
+			"name": "Pelanggan",
+			"item": [
+				{
+					"name": "Get All Pelanggan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pelanggan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pelanggan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Pelanggan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nama_bengkel\":\"Bengkel Maju Jaya\",\"kontak_bengkel\":\"08123456789\",\"kategori_bengkel\":\"Resmi\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pelanggan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pelanggan"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Customer Management"
+		},
+		{
+			"name": "Pembelian",
+			"item": [
+				{
+					"name": "Get All Pembelian",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pembelian",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pembelian"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Pembelian",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_supplier\":1,\"tanggal_pembelian\":\"2026-05-26\",\"total_harga\":500000,\"status_pembayaran\":\"Lunas\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pembelian",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"pembelian"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Purchase Management"
+		},
+		{
+			"name": "Penjualan",
+			"item": [
+				{
+					"name": "Get All Penjualan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/penjualan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"penjualan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Penjualan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_produk\":1,\"id_pelanggan\":1,\"jumlah\":5,\"harga_satuan\":75000,\"total_harga\":375000,\"tanggal_penjualan\":\"2026-05-26\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/penjualan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"penjualan"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Sales Management"
+		},
+		{
+			"name": "Stok",
+			"item": [
+				{
+					"name": "Get All Stok",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stok",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stok"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Stok",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id_produk\":1,\"jumlah_stok\":100,\"tanggal_input\":\"2026-05-26\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/stok",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stok"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Stock Management"
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get All Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admins",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admins"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sales",
+			"item": [
+				{
+					"name": "Get All Sales",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/sales",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sales"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Owner",
+			"item": [
+				{
+					"name": "Get All Owner",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/owners",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"owners"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Staff",
+			"item": [
+				{
+					"name": "Get All Staff",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/staff",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"staff"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Kepala Gudang",
+			"item": [
+				{
+					"name": "Get All Kepala",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kepala",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kepala"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Kunjungan",
+			"item": [
+				{
+					"name": "Get All Kunjungan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/kunjungan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"kunjungan"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Target Penjualan",
+			"item": [
+				{
+					"name": "Get Target Penjualan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/target-penjualan?bulan=2026-06",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"target-penjualan"
+							],
+							"query": [
+								{
+									"key": "bulan",
+									"value": "2026-06"
+								},
+								{
+									"key": "sales_id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get target bulanan & pencapaian sales. \n- Sales: otomatis hanya melihat data sendiri.\n- Admin/Owner: melihat semua summary, atau pass ?sales_id=X untuk detail satu sales."
+					},
+					"response": []
+				},
+				{
+					"name": "Set Target Penjualan (Admin Only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sales_id\": 1,\n  \"bulan\": \"2026-06\",\n  \"target_omset\": 150000000,\n  \"target_volume\": 400,\n  \"focal_products\": [\n    { \"produk_id\": 1, \"target_qty\": 50 },\n    { \"produk_id\": 2, \"target_qty\": 40 }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/target-penjualan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"target-penjualan"
+							]
+						},
+						"description": "Menetapkan target bulanan sales (Admin Only)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

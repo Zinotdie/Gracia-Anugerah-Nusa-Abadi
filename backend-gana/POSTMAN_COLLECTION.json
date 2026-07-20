@@ -1,0 +1,825 @@
+{
+  "info": {
+    "_postman_id": "gana-backend-api-001",
+    "name": "PT. GANA Backend API",
+    "description": "Postman Collection untuk API Backend PT. GANA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin@gana\",\n  \"password\": \"password123\",\n  \"role\": \"admin\"\n}"
+            },
+            "description": "Login endpoint - role: admin, sales, owner, kepala_gudang, staff_gudang"
+          },
+          "response": [
+            {
+              "name": "Login Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin@gana\",\n  \"password\": \"password123\",\n  \"role\": \"admin\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login Berhasil!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"id\": 1,\n    \"username\": \"admin@gana\",\n    \"role\": \"admin\",\n    \"nama\": \"Admin Utama\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alamat",
+      "item": [
+        {
+          "name": "Get All Alamat",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/alamat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "alamat"]
+            }
+          },
+          "response": [
+            {
+              "name": "Get All Alamat Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id_alamat\": 1,\n      \"id_pelanggan\": 1,\n      \"label_alamat\": \"Kantor Pusat\",\n      \"detail_alamat\": \"Jl. Merdeka No. 123\",\n      \"kota_kab\": \"Makassar\",\n      \"telp_bengkel\": \"08123456789\",\n      \"nama_bengkel\": \"Bengkel Maju Jaya\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Alamat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/alamat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "alamat"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_pelanggan\": 1,\n  \"label_alamat\": \"Cabang Baru\",\n  \"detail_alamat\": \"Jl. Sudirman No. 456\",\n  \"kota_kab\": \"Gowa\",\n  \"telp_bengkel\": \"08134567890\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Add Alamat Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Alamat bengkel berhasil ditambah!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Alamat",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/alamat/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "alamat", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_pelanggan\": 1,\n  \"label_alamat\": \"Kantor Pusat (Updated)\",\n  \"detail_alamat\": \"Jl. Merdeka No. 123 Blok A\",\n  \"kota_kab\": \"Makassar\",\n  \"telp_bengkel\": \"08129876543\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Update Alamat Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Alamat bengkel diupdate!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Alamat",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/alamat/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "alamat", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Delete Alamat Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Alamat bengkel dihapus!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Produk",
+      "item": [
+        {
+          "name": "Get All Produk",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/produk",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "produk"]
+            }
+          },
+          "response": [
+            {
+              "name": "Get All Produk Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id_produk\": 1,\n      \"id_kategori\": 1,\n      \"nama_produk\": \"Oli Motor Castrol\",\n      \"harga_jual\": 75000,\n      \"harga_beli\": 50000\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Produk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/produk",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "produk"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_kategori\": 1,\n  \"nama_produk\": \"Ban Motor Michelin\",\n  \"harga_jual\": 350000,\n  \"harga_beli\": 250000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Add Produk Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Produk berhasil ditambah!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kategori",
+      "item": [
+        {
+          "name": "Get All Kategori",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/kategori",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "kategori"]
+            }
+          },
+          "response": [
+            {
+              "name": "Get All Kategori Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id_kategori\": 1,\n      \"nama_kategori\": \"Oli & Pelumas\"\n    },\n    {\n      \"id_kategori\": 2,\n      \"nama_kategori\": \"Ban & Roda\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Kategori",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/kategori",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "kategori"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_kategori\": \"Aksesori Motor\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "Add Kategori Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Kategori produk berhasil ditambah!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supplier",
+      "item": [
+        {
+          "name": "Get All Supplier",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/supplier",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "supplier"]
+            }
+          }
+        },
+        {
+          "name": "Add Supplier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/supplier",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "supplier"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_supplier\": \"PT Akses Motor Supply\",\n  \"alamat\": \"Jl. Industry No. 100\",\n  \"kontak\": \"08123456789\",\n  \"email\": \"info@akses-motor.com\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pelanggan",
+      "item": [
+        {
+          "name": "Get All Pelanggan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/pelanggan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "pelanggan"]
+            }
+          }
+        },
+        {
+          "name": "Add Pelanggan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/pelanggan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "pelanggan"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_bengkel\": \"Bengkel Maju Jaya\",\n  \"kontak_bengkel\": \"08123456789\",\n  \"kategori_bengkel\": \"Resmi\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pembelian",
+      "item": [
+        {
+          "name": "Get All Pembelian",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/pembelian",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "pembelian"]
+            }
+          }
+        },
+        {
+          "name": "Add Pembelian",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/pembelian",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "pembelian"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_supplier\": 1,\n  \"tanggal_pembelian\": \"2026-05-26\",\n  \"total_harga\": 500000,\n  \"status_pembayaran\": \"Lunas\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Penjualan",
+      "item": [
+        {
+          "name": "Get All Penjualan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/penjualan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "penjualan"]
+            }
+          }
+        },
+        {
+          "name": "Add Penjualan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/penjualan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "penjualan"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_produk\": 1,\n  \"id_pelanggan\": 1,\n  \"jumlah\": 5,\n  \"harga_satuan\": 75000,\n  \"total_harga\": 375000,\n  \"tanggal_penjualan\": \"2026-05-26\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stok",
+      "item": [
+        {
+          "name": "Get All Stok",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/stok",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "stok"]
+            }
+          }
+        },
+        {
+          "name": "Add Stok",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/stok",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "stok"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_produk\": 1,\n  \"jumlah_stok\": 100,\n  \"tanggal_input\": \"2026-05-26\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/admins",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "admins"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "item": [
+        {
+          "name": "Get All Sales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/sales",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "sales"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Owner",
+      "item": [
+        {
+          "name": "Get All Owner",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/owners",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "owners"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff Gudang",
+      "item": [
+        {
+          "name": "Get All Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/staff",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "staff"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kepala Gudang",
+      "item": [
+        {
+          "name": "Get All Kepala",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/kepala",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "kepala"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kunjungan",
+      "item": [
+        {
+          "name": "Get All Kunjungan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/kunjungan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "kunjungan"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Check Server Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "health"]
+            }
+          },
+          "response": [
+            {
+              "name": "Health Check Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Server Database & API Normal! 🟢\",\n  \"waktu_server\": \"26/5/2026 14:30:45\",\n  \"uptime_detik\": 3600\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Target Penjualan",
+      "item": [
+        {
+          "name": "Get Target Penjualan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/target-penjualan?bulan=2026-06",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "target-penjualan"],
+              "query": [
+                {
+                  "key": "bulan",
+                  "value": "2026-06"
+                },
+                {
+                  "key": "sales_id",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get target bulanan & pencapaian sales. \n- Sales: otomatis hanya melihat data sendiri.\n- Admin/Owner: melihat semua summary, atau pass ?sales_id=X untuk detail satu sales."
+          }
+        },
+        {
+          "name": "Set Target Penjualan (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sales_id\": 1,\n  \"bulan\": \"2026-06\",\n  \"target_omset\": 150000000,\n  \"target_volume\": 400,\n  \"focal_products\": [\n    { \"produk_id\": 1, \"target_qty\": 50 },\n    { \"produk_id\": 2, \"target_qty\": 40 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/target-penjualan",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "target-penjualan"]
+            },
+            "description": "Menetapkan target bulanan sales (Admin Only)."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT Token dari response login - copy paste value token di sini"
+    },
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "description": "Base URL Backend"
+    }
+  ]
+}

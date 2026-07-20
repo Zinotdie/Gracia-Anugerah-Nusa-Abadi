@@ -1,0 +1,10 @@
+# Dependency Node.js
+node_modules/
+
+# File Rahasia & Environment
+.env
+
+# Log File
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
