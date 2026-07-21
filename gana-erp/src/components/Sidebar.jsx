@@ -181,7 +181,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         />
       )}
 
-      <aside className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 bg-[#2B2D83] text-white flex flex-col`}>
+      <aside className={`fixed md:sticky top-0 left-0 z-40 md:z-auto h-screen w-64 bg-[#2B2D83] text-white flex flex-col shrink-0 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         {/* Brand Header */}
         <div className="p-5 border-b border-[#3730A3] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
