@@ -34,7 +34,7 @@ export default function PengirimanBarang() {
         const data = Array.isArray(res) ? res : (res?.data || res?.orders || []);
         const mapped = data.map(so => ({
           id: so.id,
-          date: so.tgl_penjualan || (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID') : '-'),
+          date: so.date || so.tgl_invoice || so.tgl_penjualan || (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'),
           customer: so.pelanggan?.nama || so.pelanggan?.name || so.customer || '-',
           address: so.pelanggan?.alamat || so.address || '-',
           sales: so.user?.nama || so.user?.name || so.sales || 'Sales System',

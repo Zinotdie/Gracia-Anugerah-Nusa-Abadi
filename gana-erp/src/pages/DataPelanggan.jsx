@@ -246,7 +246,7 @@ export default function DataPelanggan() {
                       </div>
                       <div className="flex flex-col">
                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Pesanan Terakhir</span>
-                         <span className="text-sm font-bold text-slate-800">{customer.lastOrder || customer.last_order || '-'}</span>
+                         <span className="text-sm font-bold text-slate-800">{customer.lastOrder || customer.last_order || (customer.created_at ? new Date(customer.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-')}</span>
                       </div>
                    </div>
 
