@@ -295,9 +295,7 @@ module.exports = {
         p.metode_bayar as penjualan_metode,
         p.status_bayar as penjualan_status_bayar,
         p.tgl_invoice,
-        p.tgl_penjualan,
         p.created_at as tgl_dibuat,
-        p.bukti_transfer,
         pb.jumlah_bayar,
         pb.metode_bayar as pembayaran_metode,
         pb.status_pembayaran,
@@ -316,14 +314,14 @@ module.exports = {
 
     // Grouping / deduplicating by payment record or fallback order
     const data = rows.map(r => {
-      const statusRaw = r.status_pembayaran || (r.penjualan_status_bayar === 'Lunas' ? 'Disetujui' : (r.penjualan_metode === 'Transfer' && r.bukti_transfer ? 'Pending' : 'Disetujui'));
+      const statusRaw = r.status_pembayaran || (r.penjualan_status_bayar === 'Lunas' ? 'Disetujui' : (r.penjualan_metode === 'Transfer' && r.bukti_bayar ? 'Pending' : 'Disetujui'));
       let statusMapped = 'Disetujui';
       if (statusRaw === 'Pending' || statusRaw === 'Menunggu') statusMapped = 'Pending';
       else if (statusRaw === 'Ditolak' || statusRaw === 'Rejected') statusMapped = 'Ditolak';
       else statusMapped = 'Disetujui';
 
       const nominal = parseFloat(r.jumlah_bayar || r.total_netto || 0);
-      const tglObj = r.tgl_bayar || r.tgl_invoice || r.tgl_penjualan || r.tgl_dibuat;
+      const tglObj = r.tgl_bayar || r.tgl_invoice || r.tgl_dibuat;
 
       return {
         id_pembayaran: r.id_pembayaran || r.id_penjualan,
@@ -339,7 +337,7 @@ module.exports = {
         status_pembayaran: statusMapped,
         tgl_pembayaran: tglObj,
         tgl_bayar: tglObj ? new Date(tglObj).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-',
-        bukti_bayar: r.bukti_bayar || r.bukti_transfer || null,
+        bukti_bayar: r.bukti_bayar || null,
         created_at: tglObj
       };
     });
