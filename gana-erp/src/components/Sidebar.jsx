@@ -26,6 +26,24 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     pendingApprovalStok: 0,
     pendingPelanggan: 0
   });
+  const [readMenus, setReadMenus] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gana_read_sidebar_menus');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const handleMenuClick = (path) => {
+    if (!readMenus.includes(path)) {
+      const updated = [...readMenus, path];
+      setReadMenus(updated);
+      localStorage.setItem('gana_read_sidebar_menus', JSON.stringify(updated));
+    }
+    if (setIsOpen) setIsOpen(false);
+  };
+
   const navigate = useNavigate();
 
   useEffect(() => {
