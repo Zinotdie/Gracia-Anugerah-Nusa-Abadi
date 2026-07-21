@@ -7,7 +7,8 @@ module.exports = {
   getAllPenjualan: asyncHandler(async (req, res) => {
     const query = `
       SELECT p.*, pel.nama_bengkel, u.nama as nama_sales,
-             ab.detail_alamat, ab.kota_kab
+             ab.detail_alamat, ab.kota_kab,
+             (SELECT bukti_bayar FROM pembayaran_penjualan WHERE id_penjualan = p.id_penjualan AND bukti_bayar IS NOT NULL AND bukti_bayar != '' ORDER BY id_pembayaran DESC LIMIT 1) as bukti_bayar
       FROM penjualan p
       LEFT JOIN pelanggan pel ON p.id_pelanggan = pel.id_pelanggan
       LEFT JOIN users u ON p.id_sales = u.id
@@ -74,6 +75,8 @@ module.exports = {
         status_pengiriman: row.status_pengiriman || 'Draft',
         driver: row.driver || row.nama_driver || '',
         no_sj_customer: row.no_sj_customer || '',
+        bukti_bayar: row.bukti_bayar || null,
+        bukti_transfer: row.bukti_bayar || null,
         time: row.status_pengiriman === 'Diterima' ? new Date(row.updated_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WITA' : '',
         dataDetail: mappedItems,
         items: mappedItems

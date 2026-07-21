@@ -1192,6 +1192,23 @@ export default function DaftarPenjualan() {
                   <p className="text-sm font-medium text-[#1E293B] capitalize">{detailModal.order.paymentMethod === 'tempo' || detailModal.order.paymentMethod === 'Tempo' ? 'Tempo' : 'Transfer'}</p>
                 </div>
               </div>
+              {(detailModal.order.bukti_bayar || detailModal.order.bukti_transfer) && (
+                <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-xl flex flex-col gap-2">
+                  <span className="text-xs text-[#1E293B] font-bold">Bukti Transfer Pembayaran:</span>
+                  <img 
+                    src={detailModal.order.bukti_bayar || detailModal.order.bukti_transfer} 
+                    alt="Bukti Transfer" 
+                    onClick={() => window.open(detailModal.order.bukti_bayar || detailModal.order.bukti_transfer, '_blank')}
+                    className="max-h-48 w-full object-contain rounded-lg border border-[#CBD5E1] bg-white cursor-pointer hover:opacity-90 transition-opacity" 
+                  />
+                  <span 
+                    onClick={() => window.open(detailModal.order.bukti_bayar || detailModal.order.bukti_transfer, '_blank')}
+                    className="text-[11px] text-[#4F46E5] font-bold cursor-pointer hover:underline text-center"
+                  >
+                    Klik untuk membuka gambar penuh ↗
+                  </span>
+                </div>
+              )}
               <div className="border-t border-dashed border-[#E2E8F0]"></div>
               <div className="flex justify-between items-center bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
                 <span className="text-sm font-bold text-[#64748B]">Total Belanja ({detailModal.order.qty || 0} Item)</span>
