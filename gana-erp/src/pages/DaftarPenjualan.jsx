@@ -1064,7 +1064,7 @@ export default function DaftarPenjualan() {
                         >
                           <Eye className="w-4 h-4" /> Detail
                         </button>
-                        {so.status !== 'Draft' && (
+                        {so.status !== 'Draft' && so.status !== 'Cancelled' && so.status !== 'Dibatalkan' && (
                           <>
                             <button 
                               onClick={() => handlePrintInvoice(so)}
@@ -1216,7 +1216,7 @@ export default function DaftarPenjualan() {
               </div>
             </div>
             <div className="p-5 border-t border-[#E2E8F0] flex justify-end gap-2 bg-[#F8FAFC]">
-              {detailModal.order.status !== 'Draft' && (
+              {detailModal.order.status !== 'Draft' && detailModal.order.status !== 'Cancelled' && detailModal.order.status !== 'Dibatalkan' && (
                 <>
                   <button 
                     onClick={() => handlePrintInvoice(detailModal.order)}
