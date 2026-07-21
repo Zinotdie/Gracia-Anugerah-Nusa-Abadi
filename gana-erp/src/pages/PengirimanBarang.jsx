@@ -141,11 +141,19 @@ export default function PengirimanBarang() {
   const totalPagesDikirim = Math.ceil(filteredDikirim.length / itemsPerPageDikirim);
 
   const showAlert = (type, title, message) => {
-    setAlert({ isOpen: true, type, title, message });
+    setConfirmDialog({
+      isOpen: true,
+      type,
+      title,
+      message,
+      confirmText: 'Tutup',
+      showCancel: false,
+      onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const closeAlert = () => {
-    setAlert(prev => ({ ...prev, isOpen: false }));
+    setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleOpenModal = (orderId = '') => {
@@ -182,13 +190,10 @@ export default function PengirimanBarang() {
 
     const fullDriverInfo = `${driverName.trim()} (${plateNumber.trim().toUpperCase()})`;
     
-    // Determine if mock ID or real DB ID
-    const isMockId = isNaN(Number(selectedOrderId));
-    const apiUpdate = isMockId
-      ? Promise.reject("Mock ID")
-      : orderService.update(selectedOrderId, { status: 'Shipped', driver: fullDriverInfo });
+    const numericId = typeof selectedOrderId === 'number' ? selectedOrderId : parseInt(String(selectedOrderId).replace(/[^0-9]/g, ''), 10);
+    const targetId = !isNaN(numericId) && numericId > 0 ? numericId : selectedOrderId;
 
-    apiUpdate
+    orderService.update(targetId, { status: 'Shipped', driver: fullDriverInfo })
       .then(() => {
         loadDeliveries();
         showAlert(
