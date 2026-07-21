@@ -46,7 +46,7 @@ export default function PengirimanBarang() {
           driver: so.driver || '',
           time: so.time || '',
           updated_at: so.updated_at || so.created_at || ''
-        }));
+        })).filter(o => Number(o.qty) > 0);
         setDeliveries({
           diproses: mapped.filter(o => o.status === 'Approved'),
           dikirim: mapped.filter(o => o.status === 'Shipped'),
