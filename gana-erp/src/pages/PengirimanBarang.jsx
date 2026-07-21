@@ -378,7 +378,10 @@ export default function PengirimanBarang() {
               <table class="header-table">
                 <tr>
                   <td style="width: 45%;">
-                    <div class="title-text">SURAT JALAN</div>
+                    <div style="display: flex; items-center; gap: 8px; align-items: center; margin-bottom: 4px;">
+                      <img src="/logo-gana.jpg" style="height: 26px; object-fit: contain;" alt="Logo GANA" />
+                      <div class="title-text" style="margin-top: 0;">SURAT JALAN</div>
+                    </div>
                     <div class="company-name">PT GRACIA ANANTA NUSANTARA ABADI</div>
                   </td>
                   <td style="width: 28%; padding-top: 5px;">

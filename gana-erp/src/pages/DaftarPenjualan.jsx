@@ -362,8 +362,8 @@ export default function DaftarPenjualan() {
                 <div class="footer-sig-block">
                   <div>Hormat kami,</div>
                   <div class="logo-gana-wrapper">
-                    <div class="logo-gana">GA<span>NA</span></div>
-                    <div style="font-size: 9px; margin-top: 20px; font-weight: bold; text-decoration: underline;">
+                    <img src="/logo-gana.jpg" style="height: 28px; object-fit: contain; margin-bottom: 4px;" alt="Logo PT GANA" />
+                    <div style="font-size: 9px; margin-top: 10px; font-weight: bold; text-decoration: underline;">
                       ${order.sales || 'Ruben Aldo'}
                     </div>
                   </div>
@@ -799,8 +799,8 @@ export default function DaftarPenjualan() {
               <div style="text-align: center; width: 250px;">
                 Hormat kami,<br/>
                 <div class="logo-gana-wrapper">
-                  <div class="logo-gana">GA<span>NA</span></div>
-                  <br/><br/>
+                  <img src="/logo-gana.jpg" style="height: 28px; object-fit: contain; margin-top: 6px; margin-bottom: 4px;" alt="Logo PT GANA" />
+                  <br/>
                   <div>(.......................................)</div>
                 </div>
               </div>
