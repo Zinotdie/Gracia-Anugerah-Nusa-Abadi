@@ -53,20 +53,32 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       Promise.all([
         api.get('/api/penjualan/all-pembayaran').catch(() => ({ data: { data: [] } })),
         api.get('/api/pembelian').catch(() => ({ data: { data: [] } })),
-        api.get('/api/pelanggan').catch(() => ({ data: { data: [] } }))
-      ]).then(([payRes, pembRes, custRes]) => {
+        api.get('/api/pelanggan').catch(() => ({ data: { data: [] } })),
+        api.get('/api/penjualan').catch(() => ({ data: { data: [] } })),
+        api.get('/api/kunjungan').catch(() => ({ data: { data: [] } }))
+      ]).then(([payRes, pembRes, custRes, penRes, kunjRes]) => {
         const allPay = payRes.data?.data || [];
         const allPemb = Array.isArray(pembRes.data) ? pembRes.data : (pembRes.data?.data || []);
         const allCust = Array.isArray(custRes.data) ? custRes.data : (custRes.data?.data || custRes.data?.customers || []);
+        const allPenj = Array.isArray(penRes.data) ? penRes.data : (penRes.data?.data || penRes.data?.orders || []);
+        const allKunj = Array.isArray(kunjRes.data) ? kunjRes.data : (kunjRes.data?.data || []);
 
         const pPiutang = allPay.filter(p => p.status_pembayaran === 'Pending' && typeof p.id_pembayaran === 'number').length;
         const pStok = allPemb.filter(p => p.status_qc === 'Menunggu' || p.status === 'pending').length;
         const pCust = allCust.filter(c => c.is_active === 0 || c.status === 'Inactive').length;
+        const pDraftOrders = allPenj.filter(p => p.status === 'Draft' || p.status_pengiriman === 'Draft').length;
+        const pPengiriman = allPenj.filter(p => p.status === 'Approved' || p.status_pengiriman === 'Diproses').length;
+        const oPiutang = allPenj.filter(p => (p.status_bayar === 'Belum Lunas' || p.statusPayment === 'Belum Lunas') && p.status !== 'Dibatalkan').length;
+        const nVisits = allKunj.filter(k => k.hasOrder || k.orderValue > 0).length;
 
         setCounts({
           pendingPiutang: pPiutang,
           pendingApprovalStok: pStok,
-          pendingPelanggan: pCust
+          pendingPelanggan: pCust,
+          pendingDraftOrders: pDraftOrders,
+          pendingPengiriman: pPengiriman,
+          overduePiutang: oPiutang,
+          newVisitsCount: nVisits
         });
       });
     };
@@ -206,6 +218,16 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   badgeCount = counts.pendingApprovalStok;
                 } else if (item.path === '/data-pelanggan') {
                   badgeCount = counts.pendingPelanggan;
+                } else if (item.path === '/daftar-penjualan' || item.path === '/input-pesanan') {
+                  badgeCount = counts.pendingDraftOrders;
+                } else if (item.path === '/pengiriman-barang') {
+                  badgeCount = counts.pendingPengiriman;
+                } else if (item.path === '/aging-schedule' || item.path === '/laporan-penjualan') {
+                  badgeCount = counts.overduePiutang;
+                } else if (item.path === '/laporan-kunjungan') {
+                  badgeCount = counts.newVisitsCount;
+                } else if (item.path === '/daftar-pembelian') {
+                  badgeCount = counts.pendingApprovalStok;
                 }
 
                 const isRead = readMenus.includes(item.path);
