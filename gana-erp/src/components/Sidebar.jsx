@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { 
@@ -35,12 +35,30 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     }
   });
 
-  const handleMenuClick = (path) => {
-    if (!readMenus.includes(path)) {
-      const updated = [...readMenus, path];
-      setReadMenus(updated);
-      localStorage.setItem('gana_read_sidebar_menus', JSON.stringify(updated));
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname) {
+      setReadMenus(prev => {
+        if (!prev.includes(location.pathname)) {
+          const updated = [...prev, location.pathname];
+          localStorage.setItem('gana_read_sidebar_menus', JSON.stringify(updated));
+          return updated;
+        }
+        return prev;
+      });
     }
+  }, [location.pathname]);
+
+  const handleMenuClick = (path) => {
+    setReadMenus(prev => {
+      if (!prev.includes(path)) {
+        const updated = [...prev, path];
+        localStorage.setItem('gana_read_sidebar_menus', JSON.stringify(updated));
+        return updated;
+      }
+      return prev;
+    });
     if (setIsOpen) setIsOpen(false);
   };
 
@@ -240,7 +258,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   badgeCount = counts.newVisitsCount;
                 }
 
-                const isRead = readMenus.includes(item.path);
+                const isRead = location.pathname === item.path || readMenus.includes(item.path);
 
                 return (
                   <li key={itemIdx}>
