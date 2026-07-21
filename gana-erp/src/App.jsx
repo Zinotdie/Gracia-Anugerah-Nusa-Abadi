@@ -18,12 +18,14 @@ import TargetPenjualan from './pages/TargetPenjualan';
 import DaftarPembelian from './pages/DaftarPembelian';
 import RealtimeStock from './pages/RealtimeStock';
 import RiwayatPembayaran from './pages/RiwayatPembayaran';
+import LandingPage from './pages/LandingPage';
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route 
           path="/login" 
           element={

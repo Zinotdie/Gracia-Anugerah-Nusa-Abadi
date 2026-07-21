@@ -208,12 +208,17 @@ module.exports = {
                 COALESCE((
                   SELECT SUM(pp.jumlah_bayar)
                   FROM pembayaran_penjualan pp
-                  WHERE pp.id_penjualan = p.id_penjualan AND pp.status_pembayaran = 'Disetujui'
-                ), 0) AS total_dibayar
+                  WHERE pp.id_penjualan = p.id_penjualan AND pp.status_pembayaran IN ('Disetujui', 'Approved', 'Lunas')
+                ), 0) AS total_dibayar,
+                COALESCE((
+                  SELECT MAX(pp.tgl_bayar)
+                  FROM pembayaran_penjualan pp
+                  WHERE pp.id_penjualan = p.id_penjualan
+                ), p.tgl_invoice) AS last_activity_time
          FROM penjualan p
          JOIN pelanggan pel ON p.id_pelanggan = pel.id_pelanggan
          WHERE p.metode_bayar = 'Tempo'
-         ORDER BY p.id_penjualan DESC`
+         ORDER BY last_activity_time DESC, p.id_penjualan DESC`
       );
 
       const mappedInvoices = [];
@@ -255,6 +260,8 @@ module.exports = {
           [r.id_penjualan]
         );
 
+        const hasPendingPayment = paymentsRows.some(p => p.status_pembayaran === 'Pending');
+
         mappedInvoices.push({
           id: invoiceIdStr,
           dbId: r.id_penjualan,
@@ -265,6 +272,7 @@ module.exports = {
           invoiceDate: r.tgl_invoice ? new Date(r.tgl_invoice).toLocaleDateString('id-ID') : '-',
           dueDate: r.tgl_jatuh_tempo ? new Date(r.tgl_jatuh_tempo).toLocaleDateString('id-ID') : '-',
           rawDueDate: r.tgl_jatuh_tempo,
+          lastActivityTime: r.last_activity_time ? new Date(r.last_activity_time).getTime() : Date.now(),
           amount: totalNetto,
           paidAmount: totalDibayar,
           remainingAmount,
@@ -272,6 +280,7 @@ module.exports = {
           overdueDays,
           statusBayar,
           isLunas,
+          hasPendingPayment,
           status: uiStatus,
           days: daysVal,
           payments: paymentsRows.map(p => ({

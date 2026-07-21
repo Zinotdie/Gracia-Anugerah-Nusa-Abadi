@@ -38,6 +38,39 @@ export default function NotificationCenter({ role }) {
       const piutangInvoices = ownerPiutangRes.data?.invoices || ownerPiutangRes.data?.list || ownerPiutangRes.data?.data || [];
 
       // -----------------------------------------------------------------
+      // INSTALLMENT PAYMENT NOTIFICATIONS (All Roles)
+      // -----------------------------------------------------------------
+      if (Array.isArray(allPembayaran) && allPembayaran.length > 0) {
+        allPembayaran.forEach((p, pIdx) => {
+          const custName = p.nama_bengkel || p.bengkel || p.customer || 'Bengkel';
+          const nominal = Number(p.jumlah_bayar || 0);
+          const formattedNominal = nominal > 0 ? `Rp ${nominal.toLocaleString('id-ID')}` : '';
+
+          if (p.status_pembayaran === 'Pending') {
+            items.push({
+              id: `pay-pending-${p.id_pembayaran || pIdx}`,
+              title: `💳 Cicilan Piutang Baru: ${custName}`,
+              message: `Pengajuan cicilan ${formattedNominal} (${custName}) menunggu verifikasi Admin.`,
+              icon: <Clock className="w-4 h-4 text-amber-500" />,
+              bgColor: 'bg-amber-50',
+              path: '/monitoring-piutang',
+              time: 'Pending'
+            });
+          } else if (p.status_pembayaran === 'Disetujui' || p.status_pembayaran === 'Approved') {
+            items.push({
+              id: `pay-approved-${p.id_pembayaran || pIdx}`,
+              title: `✅ Cicilan Disetujui: ${custName}`,
+              message: `Pembayaran cicilan ${formattedNominal} untuk ${custName} telah disetujui.`,
+              icon: <CheckCheck className="w-4 h-4 text-emerald-500" />,
+              bgColor: 'bg-emerald-50',
+              path: '/monitoring-piutang',
+              time: 'Disetujui'
+            });
+          }
+        });
+      }
+
+      // -----------------------------------------------------------------
       // PIUTANG WARNINGS (Bell Notifications for Sales, Owner, Admin)
       // -----------------------------------------------------------------
       if (Array.isArray(piutangInvoices) && piutangInvoices.length > 0) {

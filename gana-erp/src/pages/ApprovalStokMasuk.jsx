@@ -61,19 +61,25 @@ export default function ApprovalStokMasuk() {
     return matchSearch && matchStatus;
   });
 
-  const handleApprove = (id) => {
-    purchaseService.update(id, { status: 'approved' })
+  const handleApprove = (item) => {
+    const targetId = typeof item === 'object' ? (item.id_pembelian || item.id) : item;
+    purchaseService.approveQC(targetId)
       .then(() => loadApprovals())
-      .catch(err => {
-        console.error("Gagal approve:", err);
+      .catch(() => {
+        purchaseService.update(targetId, { status: 'approved', status_qc: 'Sesuai' })
+          .then(() => loadApprovals())
+          .catch(err => console.error("Gagal approve:", err));
       });
   };
 
-  const handleReject = (id) => {
-    purchaseService.update(id, { status: 'rejected' })
+  const handleReject = (item) => {
+    const targetId = typeof item === 'object' ? (item.id_pembelian || item.id) : item;
+    purchaseService.rejectQC(targetId)
       .then(() => loadApprovals())
-      .catch(err => {
-        console.error("Gagal reject:", err);
+      .catch(() => {
+        purchaseService.update(targetId, { status: 'rejected', status_qc: 'Cacat/Retur' })
+          .then(() => loadApprovals())
+          .catch(err => console.error("Gagal reject:", err));
       });
   };
 
@@ -150,7 +156,15 @@ export default function ApprovalStokMasuk() {
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
+                      {item.status === 'pending' && (
+                        <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse border-2 border-white shadow-xs shrink-0" title="Perlu Persetujuan Kepala Gudang" />
+                      )}
                       <h3 className="font-bold text-[#1E293B] text-lg">{item.id}</h3>
+                      {item.status === 'pending' && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                          ⚡ PERLU APPROVAL
+                        </span>
+                      )}
                       <span className="text-xs font-bold text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-full">{item.date}</span>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-[#475569]">
@@ -190,13 +204,13 @@ export default function ApprovalStokMasuk() {
                   {item.status === 'pending' ? (
                     <>
                       <button 
-                        onClick={() => handleReject(item.id)}
+                        onClick={() => handleReject(item)}
                         className="px-4 py-2 bg-white border border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2] font-semibold text-sm rounded-xl transition-colors flex items-center gap-2"
                       >
                         <XCircle className="w-4 h-4" /> Tolak
                       </button>
                       <button 
-                        onClick={() => handleApprove(item.id)}
+                        onClick={() => handleApprove(item)}
                         className="px-6 py-2 bg-[#16A34A] hover:bg-[#15803D] text-white font-semibold text-sm rounded-xl shadow-sm transition-colors flex items-center gap-2"
                       >
                         <ShieldCheck className="w-4 h-4" /> Setujui

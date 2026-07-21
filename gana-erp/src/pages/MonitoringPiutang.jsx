@@ -148,6 +148,7 @@ export default function MonitoringPiutang() {
             fetchPayments(confirmingItem.dbId);
           }
           fetchPiutang();
+          window.dispatchEvent(new Event('pending-counts-updated'));
         }
       })
       .catch(err => {
@@ -195,7 +196,7 @@ export default function MonitoringPiutang() {
 
   const filteredPiutang = useMemo(() => {
     const list = Array.isArray(piutangData?.list) ? piutangData.list : [];
-    return list.filter(item => {
+    const filtered = list.filter(item => {
       const customerName = item?.customer || '';
       const itemId = item?.id || '';
       const matchSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -216,6 +217,15 @@ export default function MonitoringPiutang() {
       }
 
       return matchSearch && matchStatus;
+    });
+
+    return filtered.sort((a, b) => {
+      // 1. Tagihan yang memiliki pengajuan cicilan (perlu konfirmasi) berada di posisi paling atas
+      if (a.hasPendingPayment && !b.hasPendingPayment) return -1;
+      if (!a.hasPendingPayment && b.hasPendingPayment) return 1;
+
+      // 2. Setelah aksi disetujui/ditolak, data kembali ke urutan semula (ID Invoice / tgl invoice)
+      return (b.dbId || 0) - (a.dbId || 0);
     });
   }, [piutangData, searchTerm, filterStatus]);
 
@@ -399,12 +409,18 @@ export default function MonitoringPiutang() {
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-2">
                               {item.hasPendingPayment && (
-                                <span className="px-2 py-0.5 rounded text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-xs animate-pulse">
+                                  <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping inline-block" />
                                   ⚡ PERLU KONFIRMASI
                                 </span>
                               )}
                               <div>
-                                <p className="font-bold text-[#1E293B]">{item.customer}</p>
+                                <div className="flex items-center gap-1.5">
+                                  {item.hasPendingPayment && (
+                                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0 border border-white shadow-xs" title="Ada pembayaran cicilan yang perlu dikonfirmasi Admin" />
+                                  )}
+                                  <p className="font-bold text-[#1E293B]">{item.customer}</p>
+                                </div>
                                 <p className="text-xs text-[#64748B]">{item.city}</p>
                               </div>
                             </div>
@@ -530,17 +546,42 @@ export default function MonitoringPiutang() {
                     </div>
                   </div>
 
-                  <div className="mt-4 bg-white/70 border border-[#E2E8F0] rounded-xl p-3 flex justify-between items-center">
-                    <div>
-                      <p className="text-[10px] text-[#64748B] uppercase font-bold">Sisa Piutang Aktif</p>
-                      <p className="text-lg font-black text-[#DC2626]">Rp {confirmingItem.amount.toLocaleString('id-ID')}</p>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Display Mode Based on Role & Payment Status */}
                 {(() => {
-                  const isLunas = confirmingItem.isLunas || confirmingItem.amount === 0 || confirmingItem.statusBayar === 'Lunas';
+                  const approvedSum = payments.filter(p => p.status_pembayaran === 'Disetujui' || p.status_pembayaran === 'Approved').reduce((acc, curr) => acc + parseFloat(curr.jumlah_bayar || 0), 0);
+                  const currentRemaining = confirmingItem.remainingAmount !== undefined && confirmingItem.remainingAmount !== null 
+                    ? confirmingItem.remainingAmount 
+                    : Math.max(0, (confirmingItem.amount || 0) - approvedSum);
+
+                  const isLunas = confirmingItem.isLunas || currentRemaining === 0 || confirmingItem.statusBayar === 'Lunas';
+                  
+                  return (
+                    <>
+                      <div className="mt-4 bg-white/70 border border-[#E2E8F0] rounded-xl p-3 flex justify-between items-center">
+                        <div>
+                          <p className="text-[10px] text-[#64748B] uppercase font-bold">Sisa Piutang Aktif</p>
+                          <p className="text-lg font-black text-[#DC2626]">Rp {Math.round(currentRemaining).toLocaleString('id-ID')}</p>
+                        </div>
+                        {confirmingItem.paidAmount > 0 && (
+                          <div className="text-right">
+                            <p className="text-[10px] text-[#64748B] uppercase font-bold">Total Terbayar</p>
+                            <p className="text-sm font-bold text-[#16A34A]">Rp {Math.round(confirmingItem.paidAmount || approvedSum).toLocaleString('id-ID')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+                </div>
+
+                {/* Display Form / Info Based on Role */}
+                {(() => {
+                  const approvedSum = payments.filter(p => p.status_pembayaran === 'Disetujui' || p.status_pembayaran === 'Approved').reduce((acc, curr) => acc + parseFloat(curr.jumlah_bayar || 0), 0);
+                  const currentRemaining = confirmingItem.remainingAmount !== undefined && confirmingItem.remainingAmount !== null 
+                    ? confirmingItem.remainingAmount 
+                    : Math.max(0, (confirmingItem.amount || 0) - approvedSum);
+
+                  const isLunas = confirmingItem.isLunas || currentRemaining === 0 || confirmingItem.statusBayar === 'Lunas';
                   if (isLunas) {
                     return (
                       <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-2xl p-5 text-center flex flex-col items-center justify-center flex-1">
@@ -583,7 +624,7 @@ export default function MonitoringPiutang() {
                           className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#4F46E5] text-[#334155]"
                         />
                         <div className="flex justify-between items-center mt-1">
-                          <p className="text-[10px] text-[#64748B]">Maksimal pembayaran: Rp {confirmingItem.amount.toLocaleString('id-ID')},00</p>
+                          <p className="text-[10px] text-[#64748B]">Maksimal pembayaran: Rp {Math.round(currentRemaining).toLocaleString('id-ID')},00</p>
                           {jumlahBayar && (
                             <p className="text-[11px] font-black text-[#16A34A]">Format: Rp {jumlahBayar}.00</p>
                           )}

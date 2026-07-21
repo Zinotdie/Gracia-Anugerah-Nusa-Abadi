@@ -70,12 +70,12 @@ export default function Login() {
       <div className="bg-white p-8 md:p-10 rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] w-full max-w-[400px] flex flex-col items-center">
 
         {/* Logo Section */}
-        <div className="flex flex-col items-center mb-8 w-full">
-          <div className="h-14 w-14 bg-[#0B56A6] rounded-xl flex items-center justify-center mb-3">
-            <Building2 className="text-white w-7 h-7" />
+        <div className="flex flex-col items-center mb-6 w-full text-center">
+          <div className="h-16 w-16 bg-white border border-[#E2E8F0] p-1.5 rounded-2xl flex items-center justify-center mb-3 shadow-md overflow-hidden">
+            <img src="/logo-gana.jpg" alt="Logo PT GANA" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-[#1E293B] tracking-tight">GANA</h1>
-          <p className="text-sm text-[#64748B]">Sistem Distribusi</p>
+          <h1 className="text-2xl font-black text-[#2B2D83] tracking-tight">PT GANA</h1>
+          <p className="text-xs font-semibold text-[#64748B]">Sistem Informasi ERP & Distribusi Pelumas</p>
         </div>
 
         {errorMsg && (

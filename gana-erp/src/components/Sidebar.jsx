@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import api from '../utils/api';
 import { 
   Building2, 
   LayoutDashboard, 
@@ -20,10 +21,45 @@ import {
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const [role, setRole] = useState(() => localStorage.getItem('userRole') || 'admin');
+  const [counts, setCounts] = useState({
+    pendingPiutang: 0,
+    pendingApprovalStok: 0,
+    pendingPelanggan: 0
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     setRole(localStorage.getItem('userRole') || 'admin');
+
+    const fetchPendingCounts = () => {
+      Promise.all([
+        api.get('/api/penjualan/all-pembayaran').catch(() => ({ data: { data: [] } })),
+        api.get('/api/pembelian').catch(() => ({ data: { data: [] } })),
+        api.get('/api/pelanggan').catch(() => ({ data: { data: [] } }))
+      ]).then(([payRes, pembRes, custRes]) => {
+        const allPay = payRes.data?.data || [];
+        const allPemb = Array.isArray(pembRes.data) ? pembRes.data : (pembRes.data?.data || []);
+        const allCust = Array.isArray(custRes.data) ? custRes.data : (custRes.data?.data || custRes.data?.customers || []);
+
+        const pPiutang = allPay.filter(p => p.status_pembayaran === 'Pending' && typeof p.id_pembayaran === 'number').length;
+        const pStok = allPemb.filter(p => p.status_qc === 'Menunggu' || p.status === 'pending').length;
+        const pCust = allCust.filter(c => c.is_active === 0 || c.status === 'Inactive').length;
+
+        setCounts({
+          pendingPiutang: pPiutang,
+          pendingApprovalStok: pStok,
+          pendingPelanggan: pCust
+        });
+      });
+    };
+
+    fetchPendingCounts();
+    window.addEventListener('pending-counts-updated', fetchPendingCounts);
+    const interval = setInterval(fetchPendingCounts, 15000);
+    return () => {
+      window.removeEventListener('pending-counts-updated', fetchPendingCounts);
+      clearInterval(interval);
+    };
   }, []);
 
   const adminMenu = [
@@ -133,15 +169,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         md:translate-x-0
       `}>
         {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-[#3730A3] shrink-0 gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
-          <Building2 className="w-5 h-5 text-white" />
+        <div className="h-16 flex items-center px-6 border-b border-[#3730A3] shrink-0 gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden border border-[#E2E8F0]">
+            <img src="/logo-gana.jpg" alt="Logo PT GANA" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-sm leading-none text-white tracking-wide">PT. GANA</span>
+            <span className="text-[10px] text-[#A5B4FC] font-medium leading-tight mt-1">Distribusi Pelumas</span>
+          </div>
         </div>
-        <div className="flex flex-col justify-center">
-          <h1 className="text-base font-bold text-white leading-tight">GANA</h1>
-          <p className="text-[10px] text-indigo-200 leading-none">Distribusi Pelumas</p>
-        </div>
-      </div>
       
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-5 px-4 flex flex-col gap-6">
@@ -151,24 +187,45 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               {group.label}
             </h2>
             <ul className="space-y-1">
-              {group.items.map((item, itemIdx) => (
-                <li key={itemIdx}>
-                  <NavLink
-                    to={item.path}
-                    onClick={() => setIsOpen && setIsOpen(false)}
-                    className={({ isActive }) => {
-                      return `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
-                        isActive
-                        ? 'bg-[#4F46E5] text-white shadow-sm' 
-                        : 'text-indigo-100 hover:bg-[#3730A3] hover:text-white'
-                      }`
-                    }}
-                  >
-                    {item.icon}
-                    <span>{item.name}</span>
-                  </NavLink>
-                </li>
-              ))}
+              {group.items.map((item, itemIdx) => {
+                let badgeCount = 0;
+                if (item.path === '/monitoring-piutang' || item.path === '/riwayat-pembayaran') {
+                  badgeCount = counts.pendingPiutang;
+                } else if (item.path === '/approval-stok' || item.path === '/approval-stok-masuk') {
+                  badgeCount = counts.pendingApprovalStok;
+                } else if (item.path === '/data-pelanggan') {
+                  badgeCount = counts.pendingPelanggan;
+                }
+
+                return (
+                  <li key={itemIdx}>
+                    <NavLink
+                      to={item.path}
+                      onClick={() => setIsOpen && setIsOpen(false)}
+                      className={({ isActive }) => {
+                        return `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                          isActive
+                          ? 'bg-[#4F46E5] text-white shadow-sm' 
+                          : 'text-indigo-100 hover:bg-[#3730A3] hover:text-white'
+                        }`
+                      }}
+                    >
+                      {item.icon}
+                      <div className="flex-1 flex items-center justify-between">
+                        <span>{item.name}</span>
+                        {badgeCount > 0 && (
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0 border border-white/40 shadow-xs" title={`${badgeCount} Perlu Konfirmasi/Disetujui`} />
+                            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
+                              {badgeCount}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </NavLink>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

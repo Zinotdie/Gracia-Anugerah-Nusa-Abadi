@@ -184,12 +184,23 @@ export default function InputStokMasuk() {
 
     const totalQty = draftItems.reduce((acc, curr) => acc + curr.qty, 0);
 
+    const itemsList = draftItems.map(item => ({
+      id_produk: item.produk_id || item.id_produk,
+      produk_id: item.produk_id || item.id_produk,
+      qty_beli: parseInt(item.qty || item.qty_beli || 0, 10),
+      qty: parseInt(item.qty || item.qty_beli || 0, 10)
+    }));
+
     const receipt = {
       sj: sjNumber,
+      no_sj_supplier: sjNumber,
       foto_sj_supplier: fotoSj,
       supplier: supplier,
-      items: draftItems.length,
+      id_supplier: supplier,
+      itemsCount: draftItems.length,
       totalQty: totalQty,
+      items: itemsList,
+      detail_pembelian: itemsList,
       draftList: draftItems
     };
 

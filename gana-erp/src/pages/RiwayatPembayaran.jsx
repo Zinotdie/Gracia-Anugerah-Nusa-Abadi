@@ -293,7 +293,7 @@ export default function RiwayatPembayaran() {
                       <tr key={idx} className="border-b border-[#E2E8F0] hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 px-6 font-bold text-[#64748B]">{p.id_pembayaran}</td>
                         <td className="py-4 px-6 font-bold text-[#1E293B]">#INV-{String(p.id_penjualan).padStart(4, '0')}</td>
-                        <td className="py-4 px-6 font-bold text-[#1E293B]">{p.nama_bengkel}</td>
+                        <td className="py-4 px-6 font-bold text-[#1E293B]">{p.nama_bengkel || p.bengkel || p.customer || 'Bengkel'}</td>
                         <td className="py-4 px-6 text-right font-black text-[#1E293B]">
                           Rp {formatCurrency(p.jumlah_bayar)}
                         </td>
@@ -302,53 +302,51 @@ export default function RiwayatPembayaran() {
                             {p.metode_bayar || 'Transfer'}
                           </span>
                         </td>
-                        <td className="py-4 px-6">
-                          <div className="flex flex-col items-center gap-1">
-                            {p.status_pembayaran === 'Pending' ? (
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#D97706] flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> Pending
-                              </span>
-                            ) : p.status_pembayaran === 'Ditolak' ? (
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626] flex items-center gap-1">
-                                <XCircle className="w-3 h-3" /> Ditolak
-                              </span>
-                            ) : (
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3" /> Disetujui
-                              </span>
-                            )}
-
-                            {/* Konfirmasi Pembayaran oleh Admin */}
-                            {role === 'admin' && p.status_pembayaran === 'Pending' && (
-                              <div className="flex gap-1 mt-1">
-                                <button
-                                  onClick={() => handleUpdateStatus(p.id_pembayaran, 'Disetujui')}
-                                  className="px-2 py-0.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded text-[10px] font-bold shadow-sm"
-                                  title="Konfirmasi Lunas"
-                                >
-                                  Setujui
-                                </button>
-                                <button
-                                  onClick={() => handleUpdateStatus(p.id_pembayaran, 'Ditolak')}
-                                  className="px-2 py-0.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded text-[10px] font-bold shadow-sm"
-                                  title="Tolak Pembayaran"
-                                >
-                                  Tolak
-                                </button>
-                              </div>
-                            )}
-                          </div>
+                        <td className="py-4 px-6 text-center">
+                          {p.status_pembayaran === 'Pending' ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] border border-[#FDE68A] text-[#D97706]">
+                              <Clock className="w-3.5 h-3.5" /> Pending
+                            </span>
+                          ) : p.status_pembayaran === 'Ditolak' ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#FEE2E2] border border-[#FECACA] text-[#DC2626]">
+                              <XCircle className="w-3.5 h-3.5" /> Ditolak
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#E8F5E9] border border-[#C8E6C9] text-[#2E7D32]">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Disetujui
+                            </span>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-[#64748B] font-medium">{formatDate(p.tgl_bayar)}</td>
                         <td className="py-4 px-6 text-center">
-                          <button
-                            onClick={() => setSelectedDetailModal(p)}
-                            className="bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4F46E5] border border-[#C7D2FE] px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 mx-auto"
-                            title="Lihat Detail Rincian Pembayaran"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Lihat Detail</span>
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            {role === 'admin' && p.status_pembayaran === 'Pending' && typeof p.id_pembayaran === 'number' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateStatus(p.id_pembayaran, 'Disetujui')}
+                                  className="px-3 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1"
+                                  title="Konfirmasi Lunas / Setujui"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Setujui
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateStatus(p.id_pembayaran, 'Ditolak')}
+                                  className="px-3 py-1.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1"
+                                  title="Tolak Pembayaran"
+                                >
+                                  <XCircle className="w-3.5 h-3.5" /> Tolak
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => setSelectedDetailModal(p)}
+                              className="bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[#4F46E5] border border-[#C7D2FE] px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5"
+                              title="Lihat Detail Rincian Pembayaran"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Lihat Detail</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
