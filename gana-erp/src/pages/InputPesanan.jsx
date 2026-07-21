@@ -91,6 +91,7 @@ export default function InputPesanan() {
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState('transfer'); // 'transfer' or 'tempo'
   const [tempoDays, setTempoDays] = useState('14');
+  const [buktiTransfer, setBuktiTransfer] = useState('');
 
   // Custom Alert State
   const [alertModal, setAlertModal] = useState({ isOpen: false, type: 'success', title: '', message: '' });
