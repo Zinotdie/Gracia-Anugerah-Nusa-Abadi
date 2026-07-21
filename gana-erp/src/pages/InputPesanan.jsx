@@ -146,7 +146,7 @@ export default function InputPesanan() {
     return customersList.find(c => (c.nama_bengkel || c.name || c.nama) === selectedBengkel);
   }, [selectedBengkel, customersList]);
 
-  const availableProducts = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const prodName = p.name || '';
       const matchSearch = prodName.toLowerCase().includes(searchTerm.toLowerCase());
