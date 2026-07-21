@@ -285,7 +285,7 @@ module.exports = {
     }
   }),
 
-  // Get all pembayaran piutang (Hanya transaksi pembayaran riil yang ada di pembayaran_penjualan)
+  // Get all pembayaran for history & verification
   getAllPembayaran: asyncHandler(async (req, res) => {
     const query = `
       SELECT 
@@ -295,6 +295,9 @@ module.exports = {
         p.metode_bayar as penjualan_metode,
         p.status_bayar as penjualan_status_bayar,
         p.tgl_invoice,
+        p.tgl_penjualan,
+        p.created_at as tgl_dibuat,
+        p.bukti_transfer,
         pb.jumlah_bayar,
         pb.metode_bayar as pembayaran_metode,
         pb.status_pembayaran,
@@ -302,24 +305,28 @@ module.exports = {
         pb.bukti_bayar,
         pel.nama_bengkel,
         u.nama as nama_sales
-      FROM pembayaran_penjualan pb
-      JOIN penjualan p ON pb.id_penjualan = p.id_penjualan
+      FROM penjualan p
+      LEFT JOIN pembayaran_penjualan pb ON p.id_penjualan = pb.id_penjualan
       LEFT JOIN pelanggan pel ON p.id_pelanggan = pel.id_pelanggan
       LEFT JOIN users u ON p.id_sales = u.id
-      ORDER BY pb.id_pembayaran DESC
+      WHERE p.status_pengiriman != 'Dibatalkan'
+      ORDER BY p.id_penjualan DESC, pb.id_pembayaran DESC
     `;
     const [rows] = await db.query(query);
+
+    // Grouping / deduplicating by payment record or fallback order
     const data = rows.map(r => {
-      const statusRaw = r.status_pembayaran || 'Disetujui';
+      const statusRaw = r.status_pembayaran || (r.penjualan_status_bayar === 'Lunas' ? 'Disetujui' : (r.penjualan_metode === 'Transfer' && r.bukti_transfer ? 'Pending' : 'Disetujui'));
       let statusMapped = 'Disetujui';
       if (statusRaw === 'Pending' || statusRaw === 'Menunggu') statusMapped = 'Pending';
       else if (statusRaw === 'Ditolak' || statusRaw === 'Rejected') statusMapped = 'Ditolak';
       else statusMapped = 'Disetujui';
 
-      const nominal = parseFloat(r.jumlah_bayar || 0);
+      const nominal = parseFloat(r.jumlah_bayar || r.total_netto || 0);
+      const tglObj = r.tgl_bayar || r.tgl_invoice || r.tgl_penjualan || r.tgl_dibuat;
 
       return {
-        id_pembayaran: r.id_pembayaran,
+        id_pembayaran: r.id_pembayaran || r.id_penjualan,
         id_penjualan: r.id_penjualan,
         no_so: `INV-${String(r.id_penjualan).padStart(4, '0')}`,
         bengkel: r.nama_bengkel || 'Bengkel Umum',
@@ -328,12 +335,12 @@ module.exports = {
         sales: r.nama_sales || 'Sales Staff',
         nama_sales: r.nama_sales || 'Sales Staff',
         jumlah_bayar: nominal,
-        metode_bayar: r.pembayaran_metode || 'Transfer',
+        metode_bayar: r.pembayaran_metode || r.penjualan_metode || 'Transfer',
         status_pembayaran: statusMapped,
-        tgl_pembayaran: r.tgl_bayar || r.tgl_invoice,
-        tgl_bayar: (r.tgl_bayar || r.tgl_invoice) ? new Date(r.tgl_bayar || r.tgl_invoice).toLocaleDateString('id-ID') : '-',
-        bukti_bayar: r.bukti_bayar || null,
-        created_at: r.tgl_bayar || r.tgl_invoice
+        tgl_pembayaran: tglObj,
+        tgl_bayar: tglObj ? new Date(tglObj).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-',
+        bukti_bayar: r.bukti_bayar || r.bukti_transfer || null,
+        created_at: tglObj
       };
     });
     res.json({ success: true, data });
@@ -347,7 +354,6 @@ module.exports = {
     res.json({ success: true, data: rows });
   }),
 
-  // Add pembayaran piutang new record
   // Add pembayaran piutang new record
   addPembayaran: asyncHandler(async (req, res) => {
     let id_penjualan = req.params.id;
@@ -395,15 +401,24 @@ module.exports = {
     try {
       await connection.beginTransaction();
 
-      const [pembayaranRows] = await connection.query("SELECT id_penjualan, jumlah_bayar FROM pembayaran_penjualan WHERE id_pembayaran = ?", [idPembayaran]);
+      let [pembayaranRows] = await connection.query("SELECT id_pembayaran, id_penjualan, jumlah_bayar FROM pembayaran_penjualan WHERE id_pembayaran = ?", [idPembayaran]);
+      let id_penjualan;
       if (pembayaranRows.length === 0) {
-        await connection.rollback();
-        return res.status(404).json({ success: false, message: "Data pembayaran tidak ditemukan." });
+        const [penjRows] = await connection.query("SELECT id_penjualan, total_netto, metode_bayar, bukti_transfer FROM penjualan WHERE id_penjualan = ?", [idPembayaran]);
+        if (penjRows.length === 0) {
+          await connection.rollback();
+          return res.status(404).json({ success: false, message: "Data pembayaran tidak ditemukan." });
+        }
+        id_penjualan = penjRows[0].id_penjualan;
+        const [insRes] = await connection.query(
+          "INSERT INTO pembayaran_penjualan (id_penjualan, jumlah_bayar, metode_bayar, status_pembayaran, bukti_bayar, tgl_bayar) VALUES (?, ?, ?, ?, ?, NOW())",
+          [id_penjualan, parseFloat(penjRows[0].total_netto || 0), penjRows[0].metode_bayar || 'Transfer', targetStatus, penjRows[0].bukti_transfer || null]
+        );
+        idPembayaran = insRes.insertId;
+      } else {
+        id_penjualan = pembayaranRows[0].id_penjualan;
+        await connection.query("UPDATE pembayaran_penjualan SET status_pembayaran = ? WHERE id_pembayaran = ?", [targetStatus, idPembayaran]);
       }
-
-      const id_penjualan = pembayaranRows[0].id_penjualan;
-
-      await connection.query("UPDATE pembayaran_penjualan SET status_pembayaran = ? WHERE id_pembayaran = ?", [targetStatus, idPembayaran]);
 
       if (targetStatus === 'Disetujui') {
         const [sumRows] = await connection.query(
