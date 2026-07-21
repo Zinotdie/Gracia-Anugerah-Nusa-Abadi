@@ -24,7 +24,7 @@ module.exports = {
       const [monthsRows] = await db.query(
         `SELECT DISTINCT DATE_FORMAT(tgl_invoice, '%Y-%m') AS month FROM penjualan WHERE tgl_invoice IS NOT NULL ORDER BY month DESC`
       );
-      const [transactionsRows] = await db.query(
+      let [transactionsRows] = await db.query(
         `SELECT p.id_penjualan, pel.nama_bengkel, p.total_netto, p.status_bayar, p.tgl_invoice 
          FROM penjualan p
          LEFT JOIN pelanggan pel ON p.id_pelanggan = pel.id_pelanggan
@@ -32,6 +32,16 @@ module.exports = {
          ORDER BY p.id_penjualan DESC LIMIT 5`,
         [selectedMonth]
       );
+
+      if (transactionsRows.length === 0) {
+        const [allLatest] = await db.query(
+          `SELECT p.id_penjualan, pel.nama_bengkel, p.total_netto, p.status_bayar, p.tgl_invoice 
+           FROM penjualan p
+           LEFT JOIN pelanggan pel ON p.id_pelanggan = pel.id_pelanggan
+           ORDER BY p.id_penjualan DESC LIMIT 5`
+        );
+        transactionsRows = allLatest;
+      }
 
       let availableMonths = monthsRows.map(r => r.month);
       if (!availableMonths.includes(selectedMonth)) {

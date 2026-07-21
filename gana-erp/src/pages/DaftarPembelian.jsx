@@ -313,7 +313,7 @@ export default function DaftarPembelian() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex justify-center gap-2">
-                        {(p.status === 'Menunggu' || p.status === 'Pending' || p.status === 'Draft') && (
+                        {(p.status === 'pending' || p.status === 'Menunggu' || p.status === 'Pending' || p.status === 'Draft') && (
                           <>
                             <button 
                               onClick={() => {

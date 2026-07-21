@@ -18,6 +18,34 @@ export default function LaporanKunjungan() {
   const [selectedDetailVisit, setSelectedDetailVisit] = useState(null);
   const [selectedLightboxPhoto, setSelectedLightboxPhoto] = useState(null);
 
+  // Quick Add Bengkel State
+  const [isAddBengkelOpen, setIsAddBengkelOpen] = useState(false);
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: '', address: '', phone: '', city: 'Banjarmasin' });
+
+  const handleAddBengkel = (e) => {
+    e.preventDefault();
+    if (!newCustomerForm.name.trim()) return;
+    customerService.create({
+      nama_bengkel: newCustomerForm.name,
+      detail_alamat: newCustomerForm.address,
+      no_telp: newCustomerForm.phone,
+      kota_kab: newCustomerForm.city
+    })
+      .then(res => {
+        const added = res.data || res;
+        loadCustomers();
+        if (added && (added.id_pelanggan || added.id)) {
+          setNewVisit(prev => ({ ...prev, id_pelanggan: added.id_pelanggan || added.id }));
+        }
+        setIsAddBengkelOpen(false);
+        setNewCustomerForm({ name: '', address: '', phone: '', city: 'Banjarmasin' });
+      })
+      .catch(err => {
+        console.error("Gagal tambah pelanggan baru:", err);
+        alert("Gagal menambahkan bengkel baru. Pastikan data lengkap & koneksi aktif.");
+      });
+  };
+
   const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
   const isOwner = userRole === 'owner';
   const isOwnerOrAdmin = userRole === 'owner' || userRole === 'admin';
@@ -450,7 +478,6 @@ export default function LaporanKunjungan() {
           </div>
         </div>
 
-      </div>
 
       {/* Modal Catat Kunjungan */}
       {isModalOpen && (
@@ -475,7 +502,16 @@ export default function LaporanKunjungan() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold text-[#1E293B] mb-2">Nama Bengkel <span className="text-[#EF4444]">*</span></label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold text-[#1E293B]">Nama Bengkel <span className="text-[#EF4444]">*</span></label>
+                    <button 
+                      type="button"
+                      onClick={() => setIsAddBengkelOpen(true)}
+                      className="text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 hover:underline"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Tambah Bengkel Baru
+                    </button>
+                  </div>
                   <select 
                     required
                     value={newVisit.id_pelanggan}
@@ -485,10 +521,10 @@ export default function LaporanKunjungan() {
                     <option value="">-- Pilih Bengkel / Pelanggan --</option>
                     {customers.map((c) => {
                       const idVal = c.id_pelanggan || c.id;
-                      const nameVal = c.nama || c.name;
+                      const nameVal = c.nama || c.name || c.nama_bengkel;
                       return (
                         <option key={idVal} value={idVal}>
-                          {nameVal} ({c.city || c.alamat || c.kota || 'Banjarmasin'})
+                          {nameVal} ({c.city || c.alamat || c.kota || c.kota_kab || 'Banjarmasin'})
                         </option>
                       );
                     })}
@@ -685,6 +721,79 @@ export default function LaporanKunjungan() {
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
       />
+      {/* Modal Tambah Bengkel Baru */}
+      {isAddBengkelOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-[#E2E8F0]">
+              <h3 className="font-bold text-[#1E293B]">Tambah Bengkel Baru</h3>
+              <button onClick={() => setIsAddBengkelOpen(false)} className="text-[#64748B] hover:text-[#1E293B]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddBengkel} className="p-5 flex flex-col gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#1E293B] mb-1">Nama Bengkel <span className="text-[#EF4444]">*</span></label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Contoh: Bengkel Maju Jaya"
+                  value={newCustomerForm.name}
+                  onChange={(e) => setNewCustomerForm({...newCustomerForm, name: e.target.value})}
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-[#1E293B] focus:outline-none focus:border-[#4F46E5]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#1E293B] mb-1">Kota / Kabupaten</label>
+                <input 
+                  type="text" 
+                  placeholder="Banjarmasin"
+                  value={newCustomerForm.city}
+                  onChange={(e) => setNewCustomerForm({...newCustomerForm, city: e.target.value})}
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-[#1E293B] focus:outline-none focus:border-[#4F46E5]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#1E293B] mb-1">No. WhatsApp / Telepon</label>
+                <input 
+                  type="text" 
+                  placeholder="081234567890"
+                  value={newCustomerForm.phone}
+                  onChange={(e) => setNewCustomerForm({...newCustomerForm, phone: e.target.value})}
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-[#1E293B] focus:outline-none focus:border-[#4F46E5]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#1E293B] mb-1">Detail Alamat</label>
+                <textarea 
+                  rows="2"
+                  placeholder="Jl. A. Yani Km 5"
+                  value={newCustomerForm.address}
+                  onChange={(e) => setNewCustomerForm({...newCustomerForm, address: e.target.value})}
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-[#1E293B] focus:outline-none focus:border-[#4F46E5]"
+                ></textarea>
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAddBengkelOpen(false)}
+                  className="px-4 py-2 bg-white border border-[#CBD5E1] text-[#64748B] rounded-lg font-bold text-xs hover:bg-[#F8FAFC]"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit"
+                  className="px-4 py-2 bg-[#4F46E5] text-white rounded-lg font-bold text-xs hover:bg-[#4338CA]"
+                >
+                  Simpan Bengkel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      </div>
     </DashboardLayout>
   );
 }

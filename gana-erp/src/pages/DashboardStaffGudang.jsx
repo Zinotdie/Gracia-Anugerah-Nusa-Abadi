@@ -22,7 +22,7 @@ export default function DashboardStaffGudang() {
           sales: so.user?.nama || so.user?.name || so.sales || 'Sales System',
           status: so.status || 'Draft',
           qty: Number(so.qty) || (so.dataDetail ? so.dataDetail.reduce((acc, curr) => acc + (Number(curr.qty) || 0), 0) : 0),
-          date: so.tgl_penjualan || (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID') : '-'),
+          date: so.tgl_penjualan || (so.tgl_invoice ? new Date(so.tgl_invoice).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-')),
         }));
         setPendingOrders(mapped.filter(o => o.status === 'Approved'));
         setShippedCount(mapped.filter(o => o.status === 'Shipped' || o.status === 'Delivered').length);

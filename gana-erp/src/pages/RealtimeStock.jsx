@@ -99,32 +99,13 @@ export default function RealtimeStock() {
     <DashboardLayout>
       <div className="flex flex-col gap-6 font-sans">
         
-        {/* Title Section with Real-Time Indicator */}
+        {/* Title Section */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-[#1E293B] flex items-center gap-2">
               Real-Time Stock Monitor
             </h2>
             <p className="text-sm text-[#64748B] mt-1">Status inventori pelumas ter-update secara otomatis langsung dari gudang</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-bold text-emerald-700">Live Synced</span>
-            </div>
-
-            <button
-              onClick={handleManualRefresh}
-              disabled={isRefreshing}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#334155] rounded-xl text-xs font-bold transition-all shadow-2xs"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#4F46E5]' : ''}`} />
-              <span>Refresh</span>
-            </button>
           </div>
         </div>
 
@@ -216,13 +197,15 @@ export default function RealtimeStock() {
               </select>
             </div>
             
-            <Link 
-              to="/riwayat-stok" 
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#4F46E5] text-white rounded-xl text-xs font-bold hover:bg-[#4338CA] transition-colors ml-auto shadow-2xs"
-            >
-              <span>Riwayat Stok</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
+            {((localStorage.getItem('userRole') || '').toLowerCase() !== 'sales') && (
+              <Link 
+                to="/riwayat-stok" 
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#4F46E5] text-white rounded-xl text-xs font-bold hover:bg-[#4338CA] transition-colors ml-auto shadow-2xs"
+              >
+                <span>Riwayat Stok</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
           </div>
         </div>
 

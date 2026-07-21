@@ -163,9 +163,9 @@ export default function AgingSchedule() {
               </div>
               <div className="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0] p-5 flex flex-col gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#22C55E]"></div>
-                <p className="text-xs font-semibold text-[#64748B]">Belum Jatuh Tempo + 30 Hari</p>
+                <p className="text-xs font-semibold text-[#64748B]">1-30 Hari (Normal)</p>
                 <h3 className="text-[22px] font-bold text-[#22C55E]">
-                  Rp {(agingData.cards.current30 / 1000000).toFixed(1)}jt
+                  Rp {((agingData.cards.current30 || 0) / 1000000).toFixed(1)}jt
                 </h3>
               </div>
               <div className="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0] p-5 flex flex-col gap-2">
@@ -203,7 +203,6 @@ export default function AgingSchedule() {
                   <thead>
                     <tr className="bg-[#F8FAFC] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                       <th className="py-4 px-6 border-b border-[#E2E8F0]">NAMA BENGKEL</th>
-                      <th className="py-4 px-6 border-b border-[#E2E8F0]">BELUM JATUH TEMPO</th>
                       <th className="py-4 px-6 border-b border-[#E2E8F0]">1-30 HARI</th>
                       <th className="py-4 px-6 border-b border-[#E2E8F0]">31-45 HARI</th>
                       <th className="py-4 px-6 border-b border-[#E2E8F0]">&gt;45 HARI (KRITIS)</th>
@@ -213,6 +212,7 @@ export default function AgingSchedule() {
                   <tbody className="text-sm">
                     {agingData.table.length > 0 ? (
                       agingData.table.map((row, idx) => {
+                        const workshopName = row.workshop || row.name || row.nama_bengkel || row.customer || 'Bengkel';
                         const hasOverdue = ((row.d1_30 || 0) + (row.d31_45 || 0) + (row.d45_plus || 0)) > 0;
                         const isCritical = (row.d45_plus || 0) > 0;
                         return (
@@ -224,14 +224,11 @@ export default function AgingSchedule() {
                           >
                             <td className="py-4 px-6 font-semibold text-[#1E293B]">
                               <button
-                                onClick={() => handleOpenWorkshop(row.name)}
+                                onClick={() => handleOpenWorkshop(workshopName)}
                                 className="flex items-center gap-2 text-[#4F46E5] hover:text-[#4338CA] font-bold hover:underline text-left focus:outline-none"
                               >
-                                {row.name} {isCritical && <AlertTriangle className="w-4 h-4 text-[#EF4444]" />}
+                                {workshopName} {isCritical && <AlertTriangle className="w-4 h-4 text-[#EF4444]" />}
                               </button>
-                            </td>
-                            <td className="py-4 px-6 text-[#475569]">
-                              {row.current > 0 ? `Rp ${(row.current / 1000000).toFixed(1)}jt` : '-'}
                             </td>
                             <td className="py-4 px-6 font-bold text-[#22C55E]">
                               {row.d1_30 > 0 ? `Rp ${(row.d1_30 / 1000000).toFixed(1)}jt` : '-'}
@@ -250,16 +247,13 @@ export default function AgingSchedule() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan="6" className="py-8 text-center text-[#64748B]">Tidak ada data aging schedule.</td>
+                        <td colSpan="5" className="py-8 text-center text-[#64748B]">Tidak ada data aging schedule.</td>
                       </tr>
                     )}
                     {/* Total Row */}
                     {agingData.table.length > 0 && (
                       <tr className="bg-[#F8FAFC]">
                         <td className="py-4 px-6 font-bold text-[#1E293B]">TOTAL</td>
-                        <td className="py-4 px-6 font-bold text-[#1E293B]">
-                          {totalRow.current > 0 ? `Rp ${(totalRow.current / 1000000).toFixed(1)}jt` : '-'}
-                        </td>
                         <td className="py-4 px-6 font-bold text-[#22C55E]">
                           {totalRow.d1_30 > 0 ? `Rp ${(totalRow.d1_30 / 1000000).toFixed(1)}jt` : '-'}
                         </td>

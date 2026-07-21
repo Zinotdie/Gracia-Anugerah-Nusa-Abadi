@@ -146,7 +146,7 @@ export default function InputPesanan() {
     return customersList.find(c => (c.nama_bengkel || c.name || c.nama) === selectedBengkel);
   }, [selectedBengkel, customersList]);
 
-  const filteredProducts = useMemo(() => {
+  const availableProducts = useMemo(() => {
     return products.filter(p => {
       const prodName = p.name || '';
       const matchSearch = prodName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -159,7 +159,7 @@ export default function InputPesanan() {
   const addToCart = (product) => {
     const existing = cart.find(item => item.id === product.id);
     if (existing) {
-      setCart(cart.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item));
+      setCart(cart.map(item => item.id === product.id ? { ...item, qty: (Number(item.qty) || 0) + 1 } : item));
     } else {
       setCart([...cart, { ...product, qty: 1 }]);
     }
@@ -170,10 +170,10 @@ export default function InputPesanan() {
       if (item.id === id) {
         const current = Number(item.qty) || 0;
         const newQty = current + delta;
-        return newQty > 0 ? { ...item, qty: newQty } : item;
+        return newQty > 0 ? { ...item, qty: newQty } : null;
       }
       return item;
-    }));
+    }).filter(Boolean));
   };
 
   const setDirectQty = (id, targetVal) => {
@@ -183,17 +183,21 @@ export default function InputPesanan() {
     }
     const parsed = parseInt(targetVal);
     const val = isNaN(parsed) ? '' : Math.max(0, parsed);
-    setCart(cart.map(item => item.id === id ? { ...item, qty: val } : item));
+    if (val === 0) {
+      setCart(cart.filter(item => item.id !== id));
+    } else {
+      setCart(cart.map(item => item.id === id ? { ...item, qty: val } : item));
+    }
   };
 
   const handleQtyBlur = (id) => {
     setCart(cart.map(item => {
       if (item.id === id) {
         const num = Number(item.qty);
-        return { ...item, qty: (!num || num <= 0) ? 1 : num };
+        return (!num || num <= 0) ? null : { ...item, qty: num };
       }
       return item;
-    }));
+    }).filter(Boolean));
   };
 
   const removeFromCart = (id) => {
@@ -212,8 +216,8 @@ export default function InputPesanan() {
       return;
     }
     
-    const customerObj = customersList.find(c => (c.name || c.nama) === selectedBengkel);
-    const customerId = customerObj ? customerObj.id : null;
+    const customerObj = customersList.find(c => (c.name || c.nama || c.nama_bengkel) === selectedBengkel);
+    const customerId = customerObj ? (customerObj.id || customerObj.id_pelanggan) : null;
 
     let tgl_jatuh_tempo = null;
     if (paymentMethod === 'tempo') {
@@ -225,13 +229,19 @@ export default function InputPesanan() {
     // Build payload for backend API
     const orderPayload = {
       pelanggan_id: customerId,
+      id_pelanggan: customerId,
       sales_id: localStorage.getItem('userId') ? Number(localStorage.getItem('userId')) : null,
       metode_bayar: paymentMethod === 'tempo' ? 'Tempo' : 'Transfer',
       tgl_jatuh_tempo: tgl_jatuh_tempo,
       total_netto: cartTotal,
+      bukti_transfer: buktiTransfer || null,
+      bukti_bayar: buktiTransfer || null,
       dataDetail: cart.map(item => ({
         produk_id: item.id,
-        qty: item.qty,
+        id_produk: item.id,
+        qty: Number(item.qty) || 1,
+        qty_beli: Number(item.qty) || 1,
+        qty_dus: Number(item.qty) || 1,
         harga: item.price
       }))
     };
@@ -241,7 +251,8 @@ export default function InputPesanan() {
         showAlert('success', 'Pesanan Berhasil!', `Pesanan untuk ${selectedBengkel} senilai Rp ${cartTotal.toLocaleString('id-ID')} telah berhasil diproses.`);
         setCart([]);
         setSelectedBengkel('');
-        setPaymentMethod('cash');
+        setPaymentMethod('transfer');
+        setBuktiTransfer('');
       })
       .catch(err => {
         console.error("Gagal mengirim pesanan ke API:", err);
@@ -560,6 +571,31 @@ export default function InputPesanan() {
                     </button>
                   </div>
                   
+                  {paymentMethod === 'transfer' && (
+                    <div className="mt-2 bg-white border border-[#E2E8F0] rounded-lg p-3 flex flex-col gap-2">
+                      <span className="text-xs font-semibold text-[#1E293B]">Upload Bukti Transfer:</span>
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setBuktiTransfer(reader.result);
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="text-xs text-[#64748B] file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#EEF2FF] file:text-[#4F46E5]"
+                      />
+                      {buktiTransfer && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <img src={buktiTransfer} alt="Bukti Transfer" className="w-12 h-12 object-cover rounded border border-[#E2E8F0]" />
+                          <span className="text-[10px] text-[#16A34A] font-bold">Bukti transfer terlampir ✓</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {paymentMethod === 'tempo' && (
                     <div className="mt-2 flex items-center justify-between bg-white border border-[#E2E8F0] rounded-lg px-3 py-2">
                       <span className="text-xs font-semibold text-[#64748B]">Lama Tempo:</span>

@@ -4,10 +4,18 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { orderService } from '../services/orderService';
 import { productService } from '../services/productService';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function PengirimanBarang() {
   const [deliveries, setDeliveries] = useState({ diproses: [], dikirim: [], terkirim: [] });
   const location = useLocation();
+
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
   
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -182,6 +190,22 @@ export default function PengirimanBarang() {
         console.error("Gagal membuat surat jalan di server:", err);
         showAlert('error', 'Gagal', 'Gagal memproses Surat Jalan di server backend.');
       });
+  };
+
+  const promptSelesaikan = (id) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'warning',
+      title: 'Konfirmasi Penyelesaian Pengiriman',
+      message: `Apakah Anda yakin ingin menyelesaikan pengiriman barang untuk pesanan ${id}?`,
+      confirmText: 'Ya, Selesaikan',
+      cancelText: 'Batalkan',
+      showCancel: true,
+      onConfirm: () => {
+        handleSelesaikanPengiriman(id);
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleSelesaikanPengiriman = (id) => {
@@ -618,7 +642,7 @@ export default function PengirimanBarang() {
                   <div className="flex gap-2 mt-4">
                     {role !== 'kepala_gudang' && (
                       <button 
-                        onClick={() => handleSelesaikanPengiriman(item.id)}
+                        onClick={() => promptSelesaikan(item.id)}
                         className="flex-1 py-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-bold rounded-lg transition-colors"
                       >
                         Selesaikan
@@ -803,6 +827,19 @@ export default function PengirimanBarang() {
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        type={confirmDialog.type || 'warning'}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText || 'Selesaikan'}
+        cancelText={confirmDialog.cancelText || 'Batal'}
+        showCancel={true}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+      />
 
     </DashboardLayout>
   );

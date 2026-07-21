@@ -85,7 +85,7 @@ function App() {
         <Route 
           path="/riwayat-stok" 
           element={
-            <ProtectedRoute allowedRoles={['admin', 'owner', 'kepala_gudang']}>
+            <ProtectedRoute allowedRoles={['admin', 'owner', 'kepala_gudang', 'staff_gudang']}>
               <RiwayatStok />
             </ProtectedRoute>
           } 

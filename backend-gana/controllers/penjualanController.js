@@ -133,6 +133,14 @@ module.exports = {
         );
       }
 
+      const buktiTransfer = dataPenjualan.bukti_bayar || dataPenjualan.bukti_transfer || null;
+      if (metode_bayar === 'Transfer' || buktiTransfer) {
+        await connection.query(
+          "INSERT INTO pembayaran_penjualan (id_penjualan, tgl_bayar, jumlah_bayar, metode_bayar, bukti_bayar, status_pembayaran, catatan) VALUES (?, NOW(), ?, 'Transfer', ?, 'Pending', ?)",
+          [id_penjualan, total_netto, buktiTransfer, 'Pembayaran Transfer saat input pesanan']
+        );
+      }
+
       await connection.commit();
       res.json({ success: true, message: "Transaksi Penjualan berhasil dibuat.", id_penjualan });
     } catch (err) {

@@ -102,6 +102,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         { name: 'Pengiriman Barang', icon: <Truck className="w-[18px] h-[18px]" />, path: '/pengiriman-barang' },
         { name: 'Input Stok Masuk', icon: <Package className="w-[18px] h-[18px]" />, path: '/input-stok-masuk' },
         { name: 'Daftar Pembelian', icon: <ShoppingCart className="w-[18px] h-[18px]" />, path: '/daftar-pembelian' },
+        { name: 'Riwayat Stok', icon: <History className="w-[18px] h-[18px]" />, path: '/riwayat-stok' },
       ]
     }
   ];
@@ -162,20 +163,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         />
       )}
 
-      <div className={`
-        fixed md:sticky top-0 left-0 z-50 h-screen w-64 bg-[#312E81] text-white flex flex-col shrink-0
-        transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        md:translate-x-0
-      `}>
+      <aside className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 bg-[#2B2D83] text-white flex flex-col`}>
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-[#3730A3] shrink-0 gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden border border-[#E2E8F0]">
-            <img src="/logo-gana.jpg" alt="Logo PT GANA" className="w-full h-full object-contain" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-sm leading-none text-white tracking-wide">PT. GANA</span>
-            <span className="text-[10px] text-[#A5B4FC] font-medium leading-tight mt-1">Distribusi Pelumas</span>
+        <div className="p-5 border-b border-[#3730A3] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <img src="/logo-gana.jpg" alt="Logo PT GANA" className="w-10 h-10 object-contain rounded-lg bg-white p-1" />
+            <div>
+              <h1 className="font-bold text-sm text-white leading-tight">PT GANA ERP</h1>
+              <p className="text-[10px] text-indigo-200">Distributor Resmi Kixx & Petronas</p>
+            </div>
           </div>
         </div>
       
@@ -183,9 +179,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       <div className="flex-1 overflow-y-auto py-5 px-4 flex flex-col gap-6">
         {menuGroups.map((group, idx) => (
           <div key={idx}>
-            <h2 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-2 px-3 hidden">
-              {group.label}
-            </h2>
             <ul className="space-y-1">
               {group.items.map((item, itemIdx) => {
                 let badgeCount = 0;
@@ -197,11 +190,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   badgeCount = counts.pendingPelanggan;
                 }
 
+                const isRead = readMenus.includes(item.path);
+
                 return (
                   <li key={itemIdx}>
                     <NavLink
                       to={item.path}
-                      onClick={() => setIsOpen && setIsOpen(false)}
+                      onClick={() => handleMenuClick(item.path)}
                       className={({ isActive }) => {
                         return `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                           isActive
@@ -213,7 +208,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                       {item.icon}
                       <div className="flex-1 flex items-center justify-between">
                         <span>{item.name}</span>
-                        {badgeCount > 0 && (
+                        {badgeCount > 0 && !isRead && (
                           <span className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0 border border-white/40 shadow-xs" title={`${badgeCount} Perlu Konfirmasi/Disetujui`} />
                             <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
@@ -241,7 +236,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <span>Keluar</span>
         </button>
       </div>
-      </div>
+      </aside>
     </>
   );
 }
