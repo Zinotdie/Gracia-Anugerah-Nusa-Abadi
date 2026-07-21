@@ -55,13 +55,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         api.get('/api/pembelian').catch(() => ({ data: { data: [] } })),
         api.get('/api/pelanggan').catch(() => ({ data: { data: [] } })),
         api.get('/api/penjualan').catch(() => ({ data: { data: [] } })),
-        api.get('/api/kunjungan').catch(() => ({ data: { data: [] } }))
-      ]).then(([payRes, pembRes, custRes, penRes, kunjRes]) => {
+        api.get('/api/kunjungan').catch(() => ({ data: { data: [] } })),
+        api.get('/api/produk').catch(() => ({ data: { data: [] } })),
+        api.get('/api/users').catch(() => ({ data: { data: [] } }))
+      ]).then(([payRes, pembRes, custRes, penRes, kunjRes, prodRes, userRes]) => {
         const allPay = payRes.data?.data || [];
         const allPemb = Array.isArray(pembRes.data) ? pembRes.data : (pembRes.data?.data || []);
         const allCust = Array.isArray(custRes.data) ? custRes.data : (custRes.data?.data || custRes.data?.customers || []);
         const allPenj = Array.isArray(penRes.data) ? penRes.data : (penRes.data?.data || penRes.data?.orders || []);
         const allKunj = Array.isArray(kunjRes.data) ? kunjRes.data : (kunjRes.data?.data || []);
+        const allProd = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data?.data || []);
+        const allUsers = Array.isArray(userRes.data) ? userRes.data : (userRes.data?.data || []);
 
         const pPiutang = allPay.filter(p => p.status_pembayaran === 'Pending' && typeof p.id_pembayaran === 'number').length;
         const pStok = allPemb.filter(p => p.status_qc === 'Menunggu' || p.status === 'pending').length;
@@ -70,6 +74,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         const pPengiriman = allPenj.filter(p => p.status === 'Approved' || p.status_pengiriman === 'Diproses').length;
         const oPiutang = allPenj.filter(p => (p.status_bayar === 'Belum Lunas' || p.statusPayment === 'Belum Lunas') && p.status !== 'Dibatalkan').length;
         const nVisits = allKunj.filter(k => k.hasOrder || k.orderValue > 0).length;
+        const lStock = allProd.filter(p => (Number(p.stok_total_karton) || Number(p.stok) || 0) < 10).length;
+        const iUsers = allUsers.filter(u => u.is_active === 0 || u.status === 'Inactive').length;
 
         setCounts({
           pendingPiutang: pPiutang,
@@ -78,7 +84,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           pendingDraftOrders: pDraftOrders,
           pendingPengiriman: pPengiriman,
           overduePiutang: oPiutang,
-          newVisitsCount: nVisits
+          newVisitsCount: nVisits,
+          lowStockCount: lStock,
+          inactiveUsers: iUsers
         });
       });
     };
@@ -214,10 +222,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 let badgeCount = 0;
                 if (item.path === '/monitoring-piutang' || item.path === '/riwayat-pembayaran') {
                   badgeCount = counts.pendingPiutang;
-                } else if (item.path === '/approval-stok' || item.path === '/approval-stok-masuk') {
+                } else if (item.path === '/approval-stok' || item.path === '/approval-stok-masuk' || item.path === '/input-stok-masuk' || item.path === '/daftar-pembelian') {
                   badgeCount = counts.pendingApprovalStok;
                 } else if (item.path === '/data-pelanggan') {
                   badgeCount = counts.pendingPelanggan;
+                } else if (item.path === '/user-management') {
+                  badgeCount = counts.inactiveUsers;
+                } else if (item.path === '/data-produk' || item.path === '/realtime-stok') {
+                  badgeCount = counts.lowStockCount;
                 } else if (item.path === '/daftar-penjualan' || item.path === '/input-pesanan') {
                   badgeCount = counts.pendingDraftOrders;
                 } else if (item.path === '/pengiriman-barang') {
@@ -226,8 +238,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   badgeCount = counts.overduePiutang;
                 } else if (item.path === '/laporan-kunjungan') {
                   badgeCount = counts.newVisitsCount;
-                } else if (item.path === '/daftar-pembelian') {
-                  badgeCount = counts.pendingApprovalStok;
                 }
 
                 const isRead = readMenus.includes(item.path);
