@@ -32,31 +32,43 @@ export default function PengirimanBarang() {
     orderService.getAll()
       .then(res => {
         const data = Array.isArray(res) ? res : (res?.data || res?.orders || []);
-        const mapped = data.map(so => ({
-          id: so.id,
-          date: so.date || so.tgl_invoice || so.tgl_penjualan || (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'),
-          customer: so.pelanggan?.nama || so.pelanggan?.name || so.customer || '-',
-          address: so.pelanggan?.alamat || so.address || '-',
-          sales: so.user?.nama || so.user?.name || so.sales || 'Sales System',
-          total: Number(so.total_netto) || Number(so.total) || 0,
-          status: so.status || 'Draft',
-          qty: Number(so.qty) || (so.dataDetail ? so.dataDetail.reduce((acc, curr) => acc + (Number(curr.qty) || 0), 0) : 0),
-          paymentMethod: so.metode_bayar || so.paymentMethod || 'Transfer',
-          items: so.dataDetail || so.items || [],
-          driver: so.driver || '',
-          time: so.time || '',
-          updated_at: so.updated_at || so.created_at || ''
-        })).filter(o => Number(o.qty) > 0);
+        const mapped = data.map(so => {
+          const detailItems = so.dataDetail || so.items || [];
+          const calculatedQty = Number(so.qty) || (detailItems.length > 0 
+            ? detailItems.reduce((acc, curr) => acc + Number(curr.qty_beli || curr.qty_dus || curr.qty || 0), 0)
+            : 1);
+          
+          let statusUi = so.status;
+          if (!statusUi || statusUi === 'Draft') {
+            const sp = (so.status_pengiriman || '').toLowerCase();
+            if (sp === 'diproses' || sp === 'approved') statusUi = 'Approved';
+            else if (sp === 'dikirim' || sp === 'shipped') statusUi = 'Shipped';
+            else if (sp === 'diterima' || sp === 'delivered' || sp === 'invoiced') statusUi = 'Delivered';
+            else if (sp === 'dibatalkan' || sp === 'batal' || sp === 'cancelled') statusUi = 'Cancelled';
+            else statusUi = 'Draft';
+          }
+
+          return {
+            id: so.id,
+            date: so.date || so.tgl_invoice || so.tgl_penjualan || (so.created_at ? new Date(so.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'),
+            customer: so.pelanggan?.nama || so.pelanggan?.name || so.customer || '-',
+            address: so.pelanggan?.alamat || so.address || '-',
+            sales: so.user?.nama || so.user?.name || so.sales || 'Sales System',
+            total: Number(so.total_netto) || Number(so.total) || 0,
+            status: statusUi,
+            qty: calculatedQty,
+            paymentMethod: so.metode_bayar || so.paymentMethod || 'Transfer',
+            items: detailItems,
+            driver: so.driver || '',
+            time: so.time || '',
+            updated_at: so.updated_at || so.created_at || ''
+          };
+        }).filter(o => o.qty > 0 && o.status !== 'Cancelled' && o.status !== 'Dibatalkan');
+
         setDeliveries({
           diproses: mapped.filter(o => o.status === 'Approved'),
           dikirim: mapped.filter(o => o.status === 'Shipped'),
-          terkirim: mapped.filter(o => {
-            if (o.status !== 'Delivered' && o.status !== 'Invoiced') return false;
-            if (!o.updated_at) return true;
-            const deliveryTime = new Date(o.updated_at).getTime();
-            const now = Date.now();
-            return (now - deliveryTime) < 24 * 60 * 60 * 1000;
-          })
+          terkirim: mapped.filter(o => o.status === 'Delivered' || o.status === 'Invoiced')
         });
       })
       .catch(err => {
