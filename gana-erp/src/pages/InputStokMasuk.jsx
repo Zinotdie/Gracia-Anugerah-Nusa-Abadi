@@ -480,40 +480,25 @@ export default function InputStokMasuk() {
                   {draftItems.map((item, idx) => (
                     <tr key={item.id} className="border-b border-[#E2E8F0] hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          {/* Thumbnail Avatar Gambar Produk */}
-                          <div 
-                            onClick={() => openDetailModal(item)}
-                            className={`w-11 h-11 rounded-xl flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-sm border transition-transform hover:scale-105 ${
-                              item.brand === 'Kixx' 
-                                ? 'bg-gradient-to-br from-[#FEF2F2] to-[#FEE2E2] border-[#FCA5A5] text-[#DC2626]' 
-                                : 'bg-gradient-to-br from-[#ECFDF5] to-[#DCFCE7] border-[#6EE7B7] text-[#059669]'
-                            }`}
-                            title="Klik untuk melihat detail & gambar produk"
-                          >
-                            <Package className="w-5 h-5" />
-                            <span className="text-[9px] font-extrabold uppercase leading-none mt-0.5">{item.brand}</span>
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
-                                item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
-                              }`}>
-                                {item.brand}
+                        <div>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                              item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
+                            }`}>
+                              {item.brand}
+                            </span>
+                            {(item.sae || item.kemasan) && (
+                              <span className="text-[11px] font-medium text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-md">
+                                {[item.sae, item.kemasan].filter(Boolean).join(' • ')}
                               </span>
-                              {(item.sae || item.kemasan) && (
-                                <span className="text-[11px] font-medium text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-md">
-                                  {[item.sae, item.kemasan].filter(Boolean).join(' • ')}
-                                </span>
-                              )}
-                            </div>
-                            <p 
-                              onClick={() => openDetailModal(item)} 
-                              className="font-bold text-[#1E293B] hover:text-[#4F46E5] cursor-pointer transition-colors"
-                            >
-                              {item.name}
-                            </p>
+                            )}
                           </div>
+                          <p 
+                            onClick={() => openDetailModal(item)} 
+                            className="font-bold text-[#1E293B] hover:text-[#4F46E5] cursor-pointer transition-colors"
+                          >
+                            {item.name}
+                          </p>
                         </div>
                       </td>
                       <td className="py-4 px-6">
