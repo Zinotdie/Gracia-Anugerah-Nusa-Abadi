@@ -323,12 +323,30 @@ export default function InputStokMasuk() {
                   <input 
                     type="file" 
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files[0];
                       if (file) {
                         const reader = new FileReader();
-                        reader.onloadend = () => setFotoSj(reader.result);
                         reader.readAsDataURL(file);
+                        reader.onload = (event) => {
+                          const img = new Image();
+                          img.src = event.target.result;
+                          img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const maxWidth = 1200;
+                            if (width > maxWidth) {
+                              height = Math.round((height * maxWidth) / width);
+                              width = maxWidth;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            setFotoSj(canvas.toDataURL('image/jpeg', 0.7));
+                          };
+                        };
                       }
                     }}
                     className="hidden" 
