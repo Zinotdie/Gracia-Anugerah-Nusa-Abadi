@@ -36,10 +36,10 @@ export default function DaftarPembelian() {
 
   const filteredPurchases = useMemo(() => {
     return purchases.filter(p => {
-      const matchSearch = String(p.id).toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          String(p.sj).toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.supplier.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const matchSearch = String(p.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(p.sj).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+
       let matchStatus = true;
       if (statusFilter !== 'Semua Status') {
         if (statusFilter === 'Pending') matchStatus = p.status === 'pending';
@@ -76,7 +76,7 @@ export default function DaftarPembelian() {
 
   const handleExportExcel = () => {
     if (filteredPurchases.length === 0) return alert("Tidak ada data untuk dieksport");
-    
+
     const worksheetData = filteredPurchases.map(row => ({
       "NO PENERIMAAN": row.id,
       "NO SURAT JALAN": row.sj,
@@ -96,7 +96,7 @@ export default function DaftarPembelian() {
   };
 
   const getStatusBadge = (status) => {
-    switch(status) {
+    switch (status) {
       case 'pending': return <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706] flex items-center gap-1 w-max"><Clock className="w-3 h-3" /> Menunggu</span>;
       case 'approved': return <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#DCFCE7] text-[#16A34A] flex items-center gap-1 w-max"><CheckCircle2 className="w-3 h-3" /> Disetujui</span>;
       case 'rejected': return <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] flex items-center gap-1 w-max"><XCircle className="w-3 h-3" /> Ditolak</span>;
@@ -177,16 +177,20 @@ export default function DaftarPembelian() {
             <span style="font-weight: bold;">TOTAL VOLUME MASUK</span>
             <span style="font-weight: 900; font-size: 16px;">${p.totalQty} Karton</span>
           </div>
-          <div class="footer-sig">
-            <div>
-              <div>Penerima,</div>
-              <div class="sig-box">${p.staff}</div>
-            </div>
-            <div>
-              <div>Mengetahui,</div>
-              <div class="sig-box">${p.kepala || 'Kepala Gudang'}</div>
-            </div>
-          </div>
+          <table style="width: 100%; margin-top: 60px; border: none; border-collapse: collapse;">
+            <tr>
+              <td style="width: 50%; text-align: center; border: none; padding: 0 40px; vertical-align: top;">
+                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 70px;">Penerima,</div>
+                <div style="border-top: 1px solid #94A3B8; padding-top: 8px; font-size: 13px; font-weight: bold; color: #1E293B;">${p.staff}</div>
+                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Staff Gudang</div>
+              </td>
+              <td style="width: 50%; text-align: center; border: none; padding: 0 40px; vertical-align: top;">
+                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 70px;">Mengetahui,</div>
+                <div style="border-top: 1px solid #94A3B8; padding-top: 8px; font-size: 13px; font-weight: bold; color: #1E293B;">${p.kepala || 'Kepala Gudang'}</div>
+                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Kepala Gudang</div>
+              </td>
+            </tr>
+          </table>
           <script>window.print();</script>
         </body>
       </html>
@@ -199,14 +203,14 @@ export default function DaftarPembelian() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6 font-sans">
-        
+
         {/* Header */}
         <div className="flex justify-between items-end mb-2">
           <div>
             <h2 className="text-2xl font-bold text-[#1E293B]">Daftar Pembelian (Barang Masuk)</h2>
             <p className="text-sm text-[#64748B] mt-1">Laporan historis surat jalan dan invoice masuk dari supplier</p>
           </div>
-          <button 
+          <button
             onClick={handleExportExcel}
             className="bg-[#16A34A] border border-[#16A34A] text-white hover:bg-[#15803D] px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
           >
@@ -220,18 +224,18 @@ export default function DaftarPembelian() {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-[#94A3B8]" />
             </div>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari No Penerimaan, No. SJ, atau Supplier..." 
+              placeholder="Cari No Penerimaan, No. SJ, atau Supplier..."
               className="w-full pl-10 pr-4 py-2.5 border-none rounded-lg text-sm focus:outline-none focus:ring-0 text-[#334155] placeholder:text-[#94A3B8] bg-transparent"
             />
           </div>
           <div className="w-px h-8 bg-[#E2E8F0] hidden sm:block"></div>
-          
+
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            <select 
+            <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-bold text-[#334155] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] bg-white"
@@ -251,7 +255,7 @@ export default function DaftarPembelian() {
               <option value="12">Desember</option>
             </select>
 
-            <select 
+            <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-bold text-[#334155] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] bg-white"
@@ -263,7 +267,7 @@ export default function DaftarPembelian() {
               <option value="2027">2027</option>
             </select>
 
-            <select 
+            <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-bold text-[#334155] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] bg-white"
@@ -313,7 +317,7 @@ export default function DaftarPembelian() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex justify-center gap-2">
-                        <button 
+                        <button
                           onClick={() => showDetail(p)}
                           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors text-xs font-semibold shadow-sm"
                         >
@@ -356,7 +360,7 @@ export default function DaftarPembelian() {
                 </div>
               </div>
               <div className="border-t border-dashed border-[#E2E8F0]"></div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-[#64748B] font-bold mb-1">NO. SURAT JALAN SUPPLIER</p>
@@ -375,20 +379,20 @@ export default function DaftarPembelian() {
                   <p className="text-sm font-bold text-[#1E293B]">{detailModal.purchase.supplier}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-[#64748B] font-bold mb-1 flex items-center gap-1"><User className="w-3 h-3"/> STAFF GUDANG (PENCATAT)</p>
+                  <p className="text-xs text-[#64748B] font-bold mb-1 flex items-center gap-1"><User className="w-3 h-3" /> STAFF GUDANG (PENCATAT)</p>
                   <p className="text-sm font-medium text-[#1E293B]">{detailModal.purchase.staff}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-[#64748B] font-bold mb-1 flex items-center gap-1"><User className="w-3 h-3"/> KEPALA GUDANG (PENYETUJUI)</p>
+                  <p className="text-xs text-[#64748B] font-bold mb-1 flex items-center gap-1"><User className="w-3 h-3" /> KEPALA GUDANG (PENYETUJUI)</p>
                   <p className="text-sm font-medium text-[#1E293B]">{detailModal.purchase.kepala || '-'}</p>
                 </div>
               </div>
-              
+
               <div className="border-t border-dashed border-[#E2E8F0]"></div>
-              
+
               <div>
                 <p className="text-xs text-[#64748B] font-bold mb-2">DAFTAR ITEM BARANG</p>
                 <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white">
@@ -406,9 +410,8 @@ export default function DaftarPembelian() {
                         detailModal.purchase.draftList.map((item, pIdx) => (
                           <tr key={pIdx} className="border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FAFC]">
                             <td className="py-2.5 px-4">
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                                item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
-                              }`}>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
+                                }`}>
                                 {item.brand}
                               </span>
                             </td>
@@ -428,14 +431,14 @@ export default function DaftarPembelian() {
                   </table>
                 </div>
               </div>
-              
+
               {detailModal.purchase.foto_sj_supplier ? (
                 <div>
                   <p className="text-xs text-[#64748B] font-bold mb-2">FOTO SURAT JALAN / INVOICE SUPPLIER</p>
                   <div className="max-h-56 rounded-xl overflow-hidden border border-[#E2E8F0] flex items-center justify-center bg-gray-50 p-2">
-                    <img 
-                      src={detailModal.purchase.foto_sj_supplier} 
-                      alt="Foto Surat Jalan Supplier" 
+                    <img
+                      src={detailModal.purchase.foto_sj_supplier}
+                      alt="Foto Surat Jalan Supplier"
                       className="object-contain max-h-48 w-full rounded-lg cursor-pointer hover:scale-105 transition-transform duration-200"
                       onClick={() => window.open(detailModal.purchase.foto_sj_supplier, '_blank')}
                     />
@@ -452,24 +455,24 @@ export default function DaftarPembelian() {
             </div>
             <div className="p-5 border-t border-[#E2E8F0] flex justify-end gap-2.5 bg-[#F8FAFC]">
               {detailModal.purchase.foto_sj_supplier && (
-                <a 
-                  href={detailModal.purchase.foto_sj_supplier} 
+                <a
+                  href={detailModal.purchase.foto_sj_supplier}
                   download={`Foto_SJ_${detailModal.purchase.sj || detailModal.purchase.id}.jpg`}
                   target="_blank"
                   rel="noreferrer"
                   className="px-5 py-2.5 bg-[#16A34A] text-white hover:bg-[#15803D] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
                 >
-                  <Download className="w-4 h-4" /> Unduh Foto SJ
+                  <Download className="w-4 h-4" /> Unduh Foto
                 </a>
               )}
-              <button 
+              <button
                 onClick={() => handlePrint(detailModal.purchase)}
                 className="px-5 py-2.5 bg-[#4F46E5] text-white hover:bg-[#4338CA] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
               >
                 <Printer className="w-4 h-4" /> Cetak BPB
               </button>
-              <button 
-                onClick={() => setDetailModal({ isOpen: false, purchase: null })} 
+              <button
+                onClick={() => setDetailModal({ isOpen: false, purchase: null })}
                 className="px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] font-semibold rounded-xl transition-colors shadow-sm"
               >
                 Tutup
