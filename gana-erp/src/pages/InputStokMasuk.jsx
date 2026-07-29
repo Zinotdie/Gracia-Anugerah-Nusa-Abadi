@@ -1,5 +1,5 @@
 import DashboardLayout from '../layouts/DashboardLayout';
-import { PackagePlus, Save, Trash2, Search, CheckCircle2, AlertCircle, Edit2, X, Upload, Image as ImageIcon, Eye, Building2, Package, Layers, FileText } from 'lucide-react';
+import { PackagePlus, Save, Trash2, Search, CheckCircle2, AlertCircle, Edit2, X, Upload, Eye, Building2, Package, Layers, FileText, Download } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { purchaseService } from '../services/purchaseService';
 import { productService } from '../services/productService';
@@ -8,7 +8,7 @@ export default function InputStokMasuk() {
   const [products, setProducts] = useState([]);
   const [sjNumber, setSjNumber] = useState(() => localStorage.getItem('gana_incoming_stock_sj') || '');
   const [supplier, setSupplier] = useState(() => localStorage.getItem('gana_incoming_stock_supplier') || '');
-  const [fotoSj, setFotoSj] = useState('');
+  const [fotoSj, setFotoSj] = useState(() => localStorage.getItem('gana_incoming_stock_foto_sj') || '');
   const [selectedProductId, setSelectedProductId] = useState('');
   const [qty, setQty] = useState('');
   const [uom, setUom] = useState('Karton');
@@ -50,6 +50,10 @@ export default function InputStokMasuk() {
   useEffect(() => {
     localStorage.setItem('gana_incoming_stock_supplier', supplier);
   }, [supplier]);
+
+  useEffect(() => {
+    localStorage.setItem('gana_incoming_stock_foto_sj', fotoSj);
+  }, [fotoSj]);
   
   // Modal Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -61,6 +65,9 @@ export default function InputStokMasuk() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [viewingItem, setViewingItem] = useState(null);
   const [selectedLightboxPhoto, setSelectedLightboxPhoto] = useState(null);
+
+  // Modal Delete Confirm State
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, item: null });
 
   // Search text for filtering products dropdown
   const [searchProductTerm, setSearchProductTerm] = useState('');
@@ -85,6 +92,65 @@ export default function InputStokMasuk() {
 
   const closeAlert = () => {
     setAlert(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleDownloadPDF = (photoUrl, item) => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Surat Jalan Supplier - ${sjNumber || item?.name || 'Dokumen'}</title>
+          <style>
+            @page { size: A4; margin: 15mm; }
+            body { font-family: sans-serif; padding: 20px; color: #1E293B; }
+            .header { border-bottom: 2px solid #4F46E5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .title { font-size: 20px; font-weight: bold; color: #4F46E5; }
+            .subtitle { font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 600; }
+            .meta-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 15px; background: #F8FAFC; padding: 15px; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 20px; }
+            .meta-item h4 { margin: 0 0 4px 0; font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; }
+            .meta-item p { margin: 0; font-size: 13px; font-weight: bold; color: #1E293B; }
+            .img-container { width: 100%; max-height: 700px; display: flex; justify-content: center; align-items: center; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px; box-sizing: border-box; background: #FAFAFA; }
+            .img-container img { max-width: 100%; max-height: 650px; object-fit: contain; border-radius: 6px; }
+            .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">DOKUMEN SURAT JALAN SUPPLIER</div>
+              <div class="subtitle">PT. GRACIA ANUGERAH NUSA ABADI</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 14px; font-weight: bold; color: #1E293B;">No. SJ: ${sjNumber || '-'}</div>
+              <div style="font-size: 11px; color: #64748B;">Tanggal: ${new Date().toLocaleDateString('id-ID')}</div>
+            </div>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <h4>No. Surat Jalan Supplier</h4>
+              <p>${sjNumber || '-'}</p>
+            </div>
+            <div class="meta-item">
+              <h4>Supplier</h4>
+              <p>${item?.supplier || supplier || '-'}</p>
+            </div>
+          </div>
+          ${photoUrl ? `
+            <div class="img-container">
+              <img src="${photoUrl}" alt="Foto Surat Jalan Supplier" />
+            </div>
+          ` : `<div style="text-align:center; padding: 40px; color:#94A3B8;">Tidak ada lampiran foto Surat Jalan.</div>`}
+          <div class="footer">
+            Dokumen Digital Surat Jalan Supplier • Sistem GANA ERP
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
   };
 
   // Filter products by brand and search term
@@ -131,7 +197,8 @@ export default function InputStokMasuk() {
     if (existingIndex !== -1) {
       const updated = [...draftItems];
       updated[existingIndex].qty += parsedQty;
-      updated[existingIndex].supplier = supplier; // Ensure supplier is set
+      updated[existingIndex].supplier = supplier;
+      updated[existingIndex].foto_sj_supplier = fotoSj || updated[existingIndex].foto_sj_supplier;
       setDraftItems(updated);
     } else {
       setDraftItems([...draftItems, {
@@ -142,6 +209,7 @@ export default function InputStokMasuk() {
         sae: product.sae,
         kemasan: product.kemasan,
         supplier: supplier,
+        foto_sj_supplier: fotoSj,
         qty: parsedQty,
         uom: uom
       }]);
@@ -152,8 +220,15 @@ export default function InputStokMasuk() {
     setQty('');
   };
 
-  const handleDeleteDraftItem = (id) => {
-    setDraftItems(draftItems.filter(item => item.id !== id));
+  const confirmDeleteDraftItem = (item) => {
+    setDeleteConfirm({ isOpen: true, item });
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (deleteConfirm.item) {
+      setDraftItems(draftItems.filter(i => i.id !== deleteConfirm.item.id));
+    }
+    setDeleteConfirm({ isOpen: false, item: null });
   };
 
   const openEditModal = (item) => {
@@ -178,7 +253,7 @@ export default function InputStokMasuk() {
 
     setDraftItems(draftItems.map(item => 
       item.id === editingItem.id 
-        ? { ...item, qty: parsedQty, uom: editUom } 
+        ? { ...item, qty: parsedQty, uom: editUom, foto_sj_supplier: fotoSj || item.foto_sj_supplier } 
         : item
     ));
     setIsEditModalOpen(false);
@@ -187,7 +262,7 @@ export default function InputStokMasuk() {
 
   const handleSubmitToKepalaGudang = () => {
     if (!sjNumber.trim()) {
-      showAlert('error', 'Gagal', 'Silakan masukkan No. Surat Jalan / Invoice Supplier.');
+      showAlert('error', 'Gagal', 'Silakan masukkan No. Surat Jalan.');
       return;
     }
 
@@ -239,13 +314,18 @@ export default function InputStokMasuk() {
           `Penerimaan barang dengan No. Surat Jalan "${sjNumber}" senilai total ${totalQty} Karton berhasil dikirim ke Kepala Gudang untuk disetujui.`
         );
 
-        // Reset Form
+        // Reset Form & Clear LocalStorage
         setDraftItems([]);
         setSjNumber('');
         setSupplier('');
+        setFotoSj('');
         setSelectedProductId('');
         setQty('');
         setSearchProductTerm('');
+        localStorage.removeItem('gana_incoming_stock_draft');
+        localStorage.removeItem('gana_incoming_stock_sj');
+        localStorage.removeItem('gana_incoming_stock_supplier');
+        localStorage.removeItem('gana_incoming_stock_foto_sj');
       })
       .catch(err => {
         console.error("Gagal menyimpan ke database:", err);
@@ -279,6 +359,37 @@ export default function InputStokMasuk() {
                   className={`w-full py-2.5 rounded-xl font-bold text-white transition-colors shadow-sm ${alert.type === 'success' ? 'bg-[#16A34A] hover:bg-[#15803D]' : 'bg-[#DC2626] hover:bg-[#B91C1C]'}`}
                 >
                   OK, Mengerti
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm.isOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-6 text-center bg-[#FEF2F2]">
+                <div className="w-14 h-14 rounded-full bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center mx-auto mb-3">
+                  <Trash2 className="w-7 h-7" />
+                </div>
+                <h3 className="text-lg font-bold text-[#1E293B] mb-2">Konfirmasi Hapus Item</h3>
+                <p className="text-xs text-[#475569]">
+                  Apakah Anda yakin ingin menghapus item <span className="font-bold text-[#1E293B]">"{deleteConfirm.item?.name}"</span> dari draft penerimaan?
+                </p>
+              </div>
+              <div className="p-4 bg-white border-t border-[#E2E8F0] flex justify-end gap-2.5">
+                <button 
+                  onClick={() => setDeleteConfirm({ isOpen: false, item: null })}
+                  className="px-4 py-2.5 bg-white border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] font-bold text-xs rounded-xl transition-colors"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={handleDeleteConfirmed}
+                  className="px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] font-bold text-xs rounded-xl transition-colors shadow-sm"
+                >
+                  Ya, Hapus
                 </button>
               </div>
             </div>
@@ -396,7 +507,7 @@ export default function InputStokMasuk() {
                   value={supplier}
                   onChange={e => {
                     setSupplier(e.target.value);
-                    setSelectedProductId(''); // Reset product when supplier changes
+                    setSelectedProductId('');
                   }}
                   className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:ring-1 focus:ring-[#4F46E5]"
                   required
@@ -502,7 +613,7 @@ export default function InputStokMasuk() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {draftItems.map((item, idx) => (
+                  {draftItems.map((item) => (
                     <tr key={item.id} className="border-b border-[#E2E8F0] hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-6">
                         <div>
@@ -539,7 +650,7 @@ export default function InputStokMasuk() {
                           <button 
                             onClick={() => openDetailModal(item)}
                             className="text-[#4F46E5] hover:text-[#3730A3] transition-colors p-1.5 rounded-lg hover:bg-[#EEF2FF]"
-                            title="Lihat Detail & Gambar Pesanan"
+                            title="Lihat Detail Item"
                           >
                             <Eye className="w-4.5 h-4.5" />
                           </button>
@@ -551,7 +662,7 @@ export default function InputStokMasuk() {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => handleDeleteDraftItem(item.id)}
+                            onClick={() => confirmDeleteDraftItem(item)}
                             className="text-[#EF4444] hover:text-[#B91C1C] transition-colors p-1.5 rounded-lg hover:bg-[#FEE2E2]"
                             title="Hapus Item"
                           >
@@ -584,22 +695,20 @@ export default function InputStokMasuk() {
 
       </div>
 
-      {/* Modal Detail & Gambar Pesanan Draft */}
+      {/* Modal Detail Item Draft */}
       {isDetailModalOpen && viewingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Header Modal with Brand Colors */}
+            
+            {/* Header Modal */}
             <div className={`p-5 text-white flex items-center justify-between ${
               viewingItem.brand === 'Kixx' ? 'bg-gradient-to-r from-red-600 to-rose-700' : 'bg-gradient-to-r from-teal-600 to-emerald-700'
             }`}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
-                  <ImageIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg leading-tight">Detail Pesanan & Gambar Produk</h3>
-                  <p className="text-xs text-white/80 font-medium">Informasi rincian item dalam draft penerimaan</p>
-                </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-white">
+                  Brand {viewingItem.brand}
+                </span>
+                <h3 className="font-extrabold text-lg mt-1 leading-tight">{viewingItem.name}</h3>
               </div>
               <button 
                 onClick={() => { setIsDetailModalOpen(false); setViewingItem(null); }} 
@@ -611,27 +720,6 @@ export default function InputStokMasuk() {
 
             <div className="p-6 flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
               
-              {/* Card Thumbnail Gambar Produk Mockup */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 border border-[#E2E8F0]">
-                <div className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center shrink-0 border shadow-inner ${
-                  viewingItem.brand === 'Kixx' 
-                    ? 'bg-gradient-to-br from-red-50 to-rose-100 border-red-200 text-red-600' 
-                    : 'bg-gradient-to-br from-teal-50 to-emerald-100 border-teal-200 text-teal-700'
-                }`}>
-                  <Package className="w-10 h-10 mb-1" />
-                  <span className="text-[10px] font-extrabold tracking-widest uppercase">{viewingItem.brand}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full w-max ${
-                    viewingItem.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
-                  }`}>
-                    Brand {viewingItem.brand}
-                  </span>
-                  <h4 className="font-extrabold text-[#1E293B] text-base leading-snug">{viewingItem.name}</h4>
-                  <p className="text-xs text-[#64748B]">Pelumas Mesin Resmi GANA ERP</p>
-                </div>
-              </div>
-
               {/* Grid Specifications & Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E2E8F0]">
@@ -666,14 +754,37 @@ export default function InputStokMasuk() {
               </div>
 
               {/* Foto Surat Jalan Preview if attached */}
-              {fotoSj && (
-                <div className="flex flex-col gap-2">
-                  <p className="text-xs font-bold text-[#475569]">Foto Surat Jalan / Invoice Supplier Attached:</p>
+              {(viewingItem.foto_sj_supplier || fotoSj) && (
+                <div className="flex flex-col gap-2 pt-2 border-t border-dashed border-[#E2E8F0]">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-bold text-[#475569]">Dokumentasi Foto Surat Jalan Supplier:</p>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={viewingItem.foto_sj_supplier || fotoSj}
+                        download={`Foto_SJ_${sjNumber || viewingItem.id}.jpg`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-bold text-[#16A34A] hover:bg-[#DCFCE7] px-2.5 py-1 rounded-lg border border-[#BBF7D0] flex items-center gap-1 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Unduh JPG
+                      </a>
+                      <button
+                        onClick={() => handleDownloadPDF(viewingItem.foto_sj_supplier || fotoSj, viewingItem)}
+                        className="text-[11px] font-bold text-[#2563EB] hover:bg-[#DBEAFE] px-2.5 py-1 rounded-lg border border-[#BFDBFE] flex items-center gap-1 transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> Unduh PDF
+                      </button>
+                    </div>
+                  </div>
                   <div 
-                    onClick={() => setSelectedLightboxPhoto(fotoSj)}
-                    className="relative group rounded-xl overflow-hidden border border-[#E2E8F0] h-36 bg-slate-900 cursor-pointer"
+                    onClick={() => setSelectedLightboxPhoto(viewingItem.foto_sj_supplier || fotoSj)}
+                    className="relative group rounded-xl overflow-hidden border border-[#E2E8F0] h-48 bg-slate-900 cursor-pointer shadow-inner"
                   >
-                    <img src={fotoSj} alt="Foto Surat Jalan" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100" />
+                    <img 
+                      src={viewingItem.foto_sj_supplier || fotoSj} 
+                      alt="Foto Surat Jalan" 
+                      className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100" 
+                    />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Eye className="w-4 h-4" /> Klik untuk Ukuran Penuh
                     </div>
@@ -695,7 +806,7 @@ export default function InputStokMasuk() {
               </button>
               <button 
                 onClick={() => { setIsDetailModalOpen(false); setViewingItem(null); }}
-                className="px-5 py-2 bg-[#1E293B] text-white hover:bg-slate-800 rounded-xl text-sm font-semibold transition-colors"
+                className="px-5 py-2 bg-[#DC2626] text-white hover:bg-[#B91C1C] rounded-xl text-sm font-semibold transition-colors shadow-sm"
               >
                 Tutup
               </button>
@@ -777,18 +888,29 @@ export default function InputStokMasuk() {
       {/* Fullscreen Lightbox Photo Viewer */}
       {selectedLightboxPhoto && (
         <div className="fixed inset-0 bg-black/95 z-[70] flex flex-col justify-center items-center p-4">
-          <button
-            onClick={() => setSelectedLightboxPhoto(null)}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all focus:outline-none"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-3">
+            <a
+              href={selectedLightboxPhoto}
+              download="Foto_Surat_Jalan_Supplier.jpg"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
+            >
+              <Download className="w-4 h-4" /> Unduh JPG
+            </a>
+            <button
+              onClick={() => setSelectedLightboxPhoto(null)}
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all focus:outline-none"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           <img
             src={selectedLightboxPhoto}
             alt="Foto Surat Jalan Supplier"
             className="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain animate-in zoom-in-95 duration-200"
           />
-          <p className="text-white/70 text-xs mt-4 font-semibold">Foto Surat Jalan / Invoice Supplier</p>
+          <p className="text-white/70 text-xs mt-4 font-semibold">Foto Surat Jalan Supplier</p>
         </div>
       )}
 
