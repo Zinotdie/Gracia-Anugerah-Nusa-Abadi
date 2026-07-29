@@ -93,14 +93,30 @@ module.exports = {
       return res.status(400).json({ success: false, message: "Detail barang masuk (items) wajib diisi." });
     }
 
-    let supplierId = parseInt(id_supplier || supplier, 10);
-    if (isNaN(supplierId)) {
-      const [supRows] = await db.query("SELECT id_supplier FROM suppliers WHERE nama_supplier LIKE ? LIMIT 1", [`%${supplier}%`]);
+    let supplierId = null;
+    const rawSupplierStr = String(supplier || id_supplier || '').trim();
+
+    // Check if id_supplier is directly passed as numeric string/number
+    if (typeof id_supplier === 'number' || (typeof id_supplier === 'string' && /^\d+$/.test(id_supplier.trim()))) {
+      supplierId = parseInt(id_supplier, 10);
+    } else {
+      const cleanName = rawSupplierStr.replace(/\(.*?\)/g, '').trim(); // e.g. "PT. ABM (Kixx)" -> "PT. ABM"
+      const [supRows] = await db.query(
+        "SELECT id_supplier FROM suppliers WHERE nama_supplier LIKE ? OR nama_supplier LIKE ? LIMIT 1",
+        [`%${cleanName}%`, `%${rawSupplierStr}%`]
+      );
+
       if (supRows.length > 0) {
         supplierId = supRows[0].id_supplier;
       } else {
         const [firstSup] = await db.query("SELECT id_supplier FROM suppliers LIMIT 1");
-        supplierId = firstSup.length > 0 ? firstSup[0].id_supplier : 1;
+        if (firstSup.length > 0) {
+          supplierId = firstSup[0].id_supplier;
+        } else {
+          // Auto create supplier record if table is empty or missing
+          const [ins] = await db.query("INSERT INTO suppliers (nama_supplier) VALUES (?)", [rawSupplierStr || 'Supplier Default']);
+          supplierId = ins.insertId;
+        }
       }
     }
 
