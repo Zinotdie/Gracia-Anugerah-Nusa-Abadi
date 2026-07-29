@@ -42,12 +42,8 @@ module.exports = {
       id: user.id,
       username: user.username,
       role: user.role,
-      nama: user.nama
+      nama: user.nama,
     };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'gana_secret_key_2026', {
-      expiresIn: '8h'
-    });
 
     res.json({
       success: true,

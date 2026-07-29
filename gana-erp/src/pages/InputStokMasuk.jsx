@@ -1,5 +1,5 @@
 import DashboardLayout from '../layouts/DashboardLayout';
-import { PackagePlus, Save, Trash2, Search, CheckCircle2, AlertCircle, Edit2, X, Upload, Image } from 'lucide-react';
+import { PackagePlus, Save, Trash2, Search, CheckCircle2, AlertCircle, Edit2, X, Upload, Image as ImageIcon, Eye, Building2, Package, Layers, FileText } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { purchaseService } from '../services/purchaseService';
 import { productService } from '../services/productService';
@@ -57,6 +57,11 @@ export default function InputStokMasuk() {
   const [editQty, setEditQty] = useState('');
   const [editUom, setEditUom] = useState('Karton');
   
+  // Modal Detail State
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [viewingItem, setViewingItem] = useState(null);
+  const [selectedLightboxPhoto, setSelectedLightboxPhoto] = useState(null);
+
   // Search text for filtering products dropdown
   const [searchProductTerm, setSearchProductTerm] = useState('');
 
@@ -116,11 +121,17 @@ export default function InputStokMasuk() {
     const product = products.find(p => String(p.id) === String(selectedProductId));
     if (!product) return;
 
-    // Check if product already exists in draft
-    const existingIndex = draftItems.findIndex(item => item.name === product.name && item.uom === uom);
+    // Check if product already exists in draft with same uom & supplier
+    const existingIndex = draftItems.findIndex(item => 
+      item.name === product.name && 
+      item.uom === uom && 
+      (item.supplier === supplier || !item.supplier)
+    );
+
     if (existingIndex !== -1) {
       const updated = [...draftItems];
       updated[existingIndex].qty += parsedQty;
+      updated[existingIndex].supplier = supplier; // Ensure supplier is set
       setDraftItems(updated);
     } else {
       setDraftItems([...draftItems, {
@@ -128,6 +139,9 @@ export default function InputStokMasuk() {
         produk_id: product.id || product.id_produk,
         brand: product.brand,
         name: product.name,
+        sae: product.sae,
+        kemasan: product.kemasan,
+        supplier: supplier,
         qty: parsedQty,
         uom: uom
       }]);
@@ -147,6 +161,11 @@ export default function InputStokMasuk() {
     setEditQty(item.qty);
     setEditUom(item.uom);
     setIsEditModalOpen(true);
+  };
+
+  const openDetailModal = (item) => {
+    setViewingItem(item);
+    setIsDetailModalOpen(true);
   };
 
   const handleUpdateItem = (e) => {
@@ -188,7 +207,8 @@ export default function InputStokMasuk() {
       id_produk: item.produk_id || item.id_produk,
       produk_id: item.produk_id || item.id_produk,
       qty_beli: parseInt(item.qty || item.qty_beli || 0, 10),
-      qty: parseInt(item.qty || item.qty_beli || 0, 10)
+      qty: parseInt(item.qty || item.qty_beli || 0, 10),
+      supplier: item.supplier || supplier
     }));
 
     const receipt = {
@@ -332,14 +352,21 @@ export default function InputStokMasuk() {
                   )}
                 </div>
                 {fotoSj && (
-                  <div className="mt-1 h-24 rounded-lg overflow-hidden border border-[#E2E8F0]">
+                  <div className="mt-1 h-24 rounded-lg overflow-hidden border border-[#E2E8F0] relative group">
                     <img src={fotoSj} alt="Surat Jalan Supplier" className="object-cover w-full h-full" />
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLightboxPhoto(fotoSj)}
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity"
+                    >
+                      <Eye className="w-4 h-4 mr-1" /> Lihat Foto
+                    </button>
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-[#334155]">Supplier</label>
+                <label className="text-sm font-semibold text-[#334155]">Supplier *</label>
                 <select 
                   value={supplier}
                   onChange={e => {
@@ -356,7 +383,7 @@ export default function InputStokMasuk() {
               </div>
 
               <div className="flex flex-col gap-1.5 mt-2">
-                <label className="text-sm font-semibold text-[#334155]">Cari & Pilih Produk</label>
+                <label className="text-sm font-semibold text-[#334155]">Cari & Pilih Produk *</label>
                 <div className="relative mb-2">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="w-4 h-4 text-[#94A3B8]" />
@@ -384,7 +411,7 @@ export default function InputStokMasuk() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-[#334155]">Qty Masuk</label>
+                  <label className="text-sm font-semibold text-[#334155]">Qty Masuk *</label>
                   <input 
                     type="number" 
                     value={qty}
@@ -410,8 +437,9 @@ export default function InputStokMasuk() {
 
               <button 
                 type="submit"
-                className="w-full mt-4 bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#E2E8F0] text-[#1E293B] font-bold py-2.5 rounded-lg text-sm transition-colors"
+                className="w-full mt-4 bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#E2E8F0] text-[#1E293B] font-bold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
               >
+                <PackagePlus className="w-4 h-4 text-[#4F46E5]" />
                 + Tambah ke Draft
               </button>
             </form>
@@ -420,11 +448,21 @@ export default function InputStokMasuk() {
           {/* Draft Table Section */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-[#E2E8F0] flex justify-between items-center bg-[#F8FAFC]">
-              <div className="flex items-center gap-2">
-                <Save className="w-5 h-5 text-[#64748B]" />
-                <h3 className="font-bold text-[#1E293B] text-lg">Draft Penerimaan</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white border border-[#E2E8F0] rounded-xl flex items-center justify-center shadow-sm">
+                  <Save className="w-5 h-5 text-[#4F46E5]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#1E293B] text-lg">Draft Penerimaan</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5">
+                    {sjNumber ? `No. SJ: ${sjNumber}` : 'Belum ada No. SJ'} 
+                    {supplier ? ` • Supplier: ${supplier}` : ''}
+                  </p>
+                </div>
               </div>
-              <span className="bg-[#E0E7FF] text-[#4F46E5] text-xs font-bold px-3 py-1 rounded-full">{draftItems.length} Item</span>
+              <span className="bg-[#E0E7FF] text-[#4F46E5] text-xs font-bold px-3.5 py-1.5 rounded-full border border-[#C7D2FE]">
+                {draftItems.length} Item
+              </span>
             </div>
             
             <div className="overflow-x-auto flex-1">
@@ -432,6 +470,7 @@ export default function InputStokMasuk() {
                 <thead>
                   <tr className="bg-white text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider border-b border-[#E2E8F0]">
                     <th className="py-4 px-6">PRODUK</th>
+                    <th className="py-4 px-6">SUPPLIER</th>
                     <th className="py-4 px-6 text-center">QTY</th>
                     <th className="py-4 px-6 text-center">SATUAN</th>
                     <th className="py-4 px-6 text-center">AKSI</th>
@@ -441,25 +480,69 @@ export default function InputStokMasuk() {
                   {draftItems.map((item, idx) => (
                     <tr key={item.id} className="border-b border-[#E2E8F0] hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-6">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 inline-block ${item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'}`}>
-                          {item.brand}
-                        </span>
-                        <p className="font-bold text-[#1E293B]">{item.name}</p>
+                        <div className="flex items-center gap-3">
+                          {/* Thumbnail Avatar Gambar Produk */}
+                          <div 
+                            onClick={() => openDetailModal(item)}
+                            className={`w-11 h-11 rounded-xl flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-sm border transition-transform hover:scale-105 ${
+                              item.brand === 'Kixx' 
+                                ? 'bg-gradient-to-br from-[#FEF2F2] to-[#FEE2E2] border-[#FCA5A5] text-[#DC2626]' 
+                                : 'bg-gradient-to-br from-[#ECFDF5] to-[#DCFCE7] border-[#6EE7B7] text-[#059669]'
+                            }`}
+                            title="Klik untuk melihat detail & gambar produk"
+                          >
+                            <Package className="w-5 h-5" />
+                            <span className="text-[9px] font-extrabold uppercase leading-none mt-0.5">{item.brand}</span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
+                                item.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
+                              }`}>
+                                {item.brand}
+                              </span>
+                              {(item.sae || item.kemasan) && (
+                                <span className="text-[11px] font-medium text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-md">
+                                  {[item.sae, item.kemasan].filter(Boolean).join(' • ')}
+                                </span>
+                              )}
+                            </div>
+                            <p 
+                              onClick={() => openDetailModal(item)} 
+                              className="font-bold text-[#1E293B] hover:text-[#4F46E5] cursor-pointer transition-colors"
+                            >
+                              {item.name}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-1.5 font-semibold text-[#334155]">
+                          <Building2 className="w-4 h-4 text-[#64748B]" />
+                          <span>{item.supplier || supplier || 'PT. PLI (Petronas)'}</span>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center font-bold text-[#1E293B]">{item.qty}</td>
-                      <td className="py-4 px-6 text-center text-[#64748B]">{item.uom}</td>
+                      <td className="py-4 px-6 text-center text-[#64748B] font-medium">{item.uom}</td>
                       <td className="py-4 px-6 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button 
+                            onClick={() => openDetailModal(item)}
+                            className="text-[#4F46E5] hover:text-[#3730A3] transition-colors p-1.5 rounded-lg hover:bg-[#EEF2FF]"
+                            title="Lihat Detail & Gambar Pesanan"
+                          >
+                            <Eye className="w-4.5 h-4.5" />
+                          </button>
                           <button 
                             onClick={() => openEditModal(item)}
-                            className="text-[#3B82F6] hover:text-[#2563EB] transition-colors p-1.5 rounded-md hover:bg-[#EFF6FF]"
+                            className="text-[#3B82F6] hover:text-[#2563EB] transition-colors p-1.5 rounded-lg hover:bg-[#EFF6FF]"
                             title="Edit Item"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => handleDeleteDraftItem(item.id)}
-                            className="text-[#EF4444] hover:text-[#B91C1C] transition-colors p-1.5 rounded-md hover:bg-[#FEE2E2]"
+                            className="text-[#EF4444] hover:text-[#B91C1C] transition-colors p-1.5 rounded-lg hover:bg-[#FEE2E2]"
                             title="Hapus Item"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -470,7 +553,7 @@ export default function InputStokMasuk() {
                   ))}
                   {draftItems.length === 0 && (
                     <tr>
-                      <td colSpan="4" className="py-12 text-center text-[#94A3B8]">
+                      <td colSpan="5" className="py-12 text-center text-[#94A3B8]">
                         Belum ada item di draft. Silakan tambah produk dari form di samping.
                       </td>
                     </tr>
@@ -490,6 +573,126 @@ export default function InputStokMasuk() {
         </div>
 
       </div>
+
+      {/* Modal Detail & Gambar Pesanan Draft */}
+      {isDetailModalOpen && viewingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header Modal with Brand Colors */}
+            <div className={`p-5 text-white flex items-center justify-between ${
+              viewingItem.brand === 'Kixx' ? 'bg-gradient-to-r from-red-600 to-rose-700' : 'bg-gradient-to-r from-teal-600 to-emerald-700'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
+                  <ImageIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight">Detail Pesanan & Gambar Produk</h3>
+                  <p className="text-xs text-white/80 font-medium">Informasi rincian item dalam draft penerimaan</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setIsDetailModalOpen(false); setViewingItem(null); }} 
+                className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
+              
+              {/* Card Thumbnail Gambar Produk Mockup */}
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 border border-[#E2E8F0]">
+                <div className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center shrink-0 border shadow-inner ${
+                  viewingItem.brand === 'Kixx' 
+                    ? 'bg-gradient-to-br from-red-50 to-rose-100 border-red-200 text-red-600' 
+                    : 'bg-gradient-to-br from-teal-50 to-emerald-100 border-teal-200 text-teal-700'
+                }`}>
+                  <Package className="w-10 h-10 mb-1" />
+                  <span className="text-[10px] font-extrabold tracking-widest uppercase">{viewingItem.brand}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full w-max ${
+                    viewingItem.brand === 'Kixx' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
+                  }`}>
+                    Brand {viewingItem.brand}
+                  </span>
+                  <h4 className="font-extrabold text-[#1E293B] text-base leading-snug">{viewingItem.name}</h4>
+                  <p className="text-xs text-[#64748B]">Pelumas Mesin Resmi GANA ERP</p>
+                </div>
+              </div>
+
+              {/* Grid Specifications & Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E2E8F0]">
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase mb-1 flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-[#4F46E5]" /> Supplier
+                  </p>
+                  <p className="text-sm font-bold text-[#1E293B]">{viewingItem.supplier || supplier || '-'}</p>
+                </div>
+
+                <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E2E8F0]">
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase mb-1 flex items-center gap-1">
+                    <FileText className="w-3.5 h-3.5 text-[#4F46E5]" /> No. Surat Jalan
+                  </p>
+                  <p className="text-sm font-bold text-[#1E293B]">{sjNumber || '-'}</p>
+                </div>
+
+                <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E2E8F0]">
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase mb-1 flex items-center gap-1">
+                    <Layers className="w-3.5 h-3.5 text-[#4F46E5]" /> SAE / Kemasan
+                  </p>
+                  <p className="text-sm font-bold text-[#1E293B]">
+                    {[viewingItem.sae, viewingItem.kemasan].filter(Boolean).join(' • ') || '-'}
+                  </p>
+                </div>
+
+                <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E2E8F0]">
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase mb-1 flex items-center gap-1">
+                    <Package className="w-3.5 h-3.5 text-[#4F46E5]" /> Qty Pesanan
+                  </p>
+                  <p className="text-sm font-extrabold text-[#4F46E5]">{viewingItem.qty} {viewingItem.uom}</p>
+                </div>
+              </div>
+
+              {/* Foto Surat Jalan Preview if attached */}
+              {fotoSj && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-bold text-[#475569]">Foto Surat Jalan / Invoice Supplier Attached:</p>
+                  <div 
+                    onClick={() => setSelectedLightboxPhoto(fotoSj)}
+                    className="relative group rounded-xl overflow-hidden border border-[#E2E8F0] h-36 bg-slate-900 cursor-pointer"
+                  >
+                    <img src={fotoSj} alt="Foto Surat Jalan" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Eye className="w-4 h-4" /> Klik untuk Ukuran Penuh
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            <div className="p-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  setIsDetailModalOpen(false);
+                  openEditModal(viewingItem);
+                }}
+                className="px-4 py-2 bg-[#EEF2FF] text-[#4F46E5] hover:bg-[#E0E7FF] rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5"
+              >
+                <Edit2 className="w-4 h-4" /> Edit Qty Item
+              </button>
+              <button 
+                onClick={() => { setIsDetailModalOpen(false); setViewingItem(null); }}
+                className="px-5 py-2 bg-[#1E293B] text-white hover:bg-slate-800 rounded-xl text-sm font-semibold transition-colors"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Edit Item Draft */}
       {isEditModalOpen && editingItem && (
@@ -560,6 +763,25 @@ export default function InputStokMasuk() {
           </div>
         </div>
       )}
+
+      {/* Fullscreen Lightbox Photo Viewer */}
+      {selectedLightboxPhoto && (
+        <div className="fixed inset-0 bg-black/95 z-[70] flex flex-col justify-center items-center p-4">
+          <button
+            onClick={() => setSelectedLightboxPhoto(null)}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all focus:outline-none"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={selectedLightboxPhoto}
+            alt="Foto Surat Jalan Supplier"
+            className="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain animate-in zoom-in-95 duration-200"
+          />
+          <p className="text-white/70 text-xs mt-4 font-semibold">Foto Surat Jalan / Invoice Supplier</p>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 }
