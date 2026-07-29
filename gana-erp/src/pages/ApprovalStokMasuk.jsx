@@ -83,6 +83,65 @@ export default function ApprovalStokMasuk() {
       });
   };
 
+  const handleDownloadPDF = (item) => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Surat Jalan Supplier - ${item.sj || item.id}</title>
+          <style>
+            @page { size: A4; margin: 15mm; }
+            body { font-family: sans-serif; padding: 20px; color: #1E293B; }
+            .header { border-bottom: 2px solid #4F46E5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .title { font-size: 20px; font-weight: bold; color: #4F46E5; }
+            .subtitle { font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 600; }
+            .meta-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 15px; background: #F8FAFC; padding: 15px; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 20px; }
+            .meta-item h4 { margin: 0 0 4px 0; font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; }
+            .meta-item p { margin: 0; font-size: 13px; font-weight: bold; color: #1E293B; }
+            .img-container { width: 100%; max-height: 700px; display: flex; justify-content: center; align-items: center; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px; box-sizing: border-box; background: #FAFAFA; }
+            .img-container img { max-width: 100%; max-height: 650px; object-fit: contain; border-radius: 6px; }
+            .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">DOKUMEN SURAT JALAN SUPPLIER</div>
+              <div class="subtitle">PT. GRACIA ANUGERAH NUSA ABADI</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 14px; font-weight: bold; color: #1E293B;">ID: ${item.id}</div>
+              <div style="font-size: 11px; color: #64748B;">Tanggal: ${item.date || '-'}</div>
+            </div>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <h4>No. Surat Jalan Supplier</h4>
+              <p>${item.sj || '-'}</p>
+            </div>
+            <div class="meta-item">
+              <h4>Supplier</h4>
+              <p>${item.supplier || '-'}</p>
+            </div>
+          </div>
+          ${item.foto_sj_supplier ? `
+            <div class="img-container">
+              <img src="${item.foto_sj_supplier}" alt="Foto Surat Jalan Supplier" />
+            </div>
+          ` : `<div style="text-align:center; padding: 40px; color:#94A3B8;">Tidak ada lampiran foto Surat Jalan.</div>`}
+          <div class="footer">
+            Dokumen Digital Surat Jalan Supplier • Sistem GANA ERP
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
   const toggleExpand = (id) => {
     setExpandedCardId(expandedCardId === id ? null : id);
   };
@@ -248,8 +307,14 @@ export default function ApprovalStokMasuk() {
                           rel="noreferrer"
                           className="text-xs font-bold text-[#16A34A] hover:text-[#15803D] bg-[#DCFCE7] hover:bg-[#BBF7D0] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
                         >
-                          <Download className="w-3.5 h-3.5" /> Unduh Foto
+                          <Download className="w-3.5 h-3.5" /> Unduh JPG
                         </a>
+                        <button
+                          onClick={() => handleDownloadPDF(item)}
+                          className="text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-[#DBEAFE] hover:bg-[#BFDBFE] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" /> Unduh PDF
+                        </button>
                       </div>
                     </div>
                   )}

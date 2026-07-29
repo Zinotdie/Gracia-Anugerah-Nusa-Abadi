@@ -104,94 +104,57 @@ export default function DaftarPembelian() {
     }
   };
 
-  const handlePrint = (p) => {
+  const handleDownloadPDF = (p) => {
     const printContent = `
       <html>
         <head>
-          <title>Bukti Penerimaan Barang - ${p.id}</title>
+          <title>Surat Jalan Supplier - ${p.sj || p.id}</title>
           <style>
-            body { font-family: sans-serif; padding: 40px; color: #1E293B; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #E2E8F0; padding-bottom: 20px; margin-bottom: 30px; }
-            .title { font-size: 22px; font-weight: bold; color: #4F46E5; }
-            .metadata { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-            .meta-block h4 { margin: 0 0 5px 0; font-size: 11px; color: #64748B; text-transform: uppercase; }
-            .meta-block p { margin: 0; font-size: 14px; font-weight: bold; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { background: #F1F5F9; color: #475569; padding: 12px; font-size: 12px; font-weight: bold; text-align: left; border-bottom: 1px solid #E2E8F0; }
-            td { padding: 12px; font-size: 13px; border-bottom: 1px solid #F1F5F9; }
-            .total-section { margin-top: 30px; display: flex; justify-content: space-between; background: #F8FAFC; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; }
-            .footer-sig { margin-top: 50px; display: grid; grid-template-cols: 1fr 1fr; text-align: center; gap: 100px; }
-            .sig-box { border-top: 1px solid #CBD5E1; padding-top: 10px; margin-top: 70px; }
+            @page { size: A4; margin: 15mm; }
+            body { font-family: sans-serif; padding: 20px; color: #1E293B; }
+            .header { border-bottom: 2px solid #4F46E5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .title { font-size: 20px; font-weight: bold; color: #4F46E5; }
+            .subtitle { font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 600; }
+            .meta-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 15px; background: #F8FAFC; padding: 15px; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 20px; }
+            .meta-item h4 { margin: 0 0 4px 0; font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; }
+            .meta-item p { margin: 0; font-size: 13px; font-weight: bold; color: #1E293B; }
+            .img-container { width: 100%; max-height: 700px; display: flex; justify-content: center; align-items: center; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px; box-sizing: border-box; background: #FAFAFA; }
+            .img-container img { max-width: 100%; max-height: 650px; object-fit: contain; border-radius: 6px; }
+            .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 10px; }
           </style>
         </head>
         <body>
           <div class="header">
             <div>
-              <div class="title">BUKTI PENERIMAAN BARANG (BPB)</div>
-              <div style="font-size: 12px; color: #64748B; margin-top: 5px;">PT. GRACIA ANUGERAH NUSA ABADI</div>
+              <div class="title">DOKUMEN SURAT JALAN SUPPLIER</div>
+              <div class="subtitle">PT. GRACIA ANUGERAH NUSA ABADI</div>
             </div>
             <div style="text-align: right;">
-              <div style="font-size: 16px; font-weight: bold;">${p.id}</div>
-              <div style="font-size: 12px; color: #64748B;">Tanggal: ${p.date}</div>
+              <div style="font-size: 14px; font-weight: bold; color: #1E293B;">ID: ${p.id}</div>
+              <div style="font-size: 11px; color: #64748B;">Tanggal: ${p.date || '-'}</div>
             </div>
           </div>
-          <div class="metadata">
-            <div class="meta-block">
+          <div class="meta-grid">
+            <div class="meta-item">
               <h4>No. Surat Jalan Supplier</h4>
-              <p>${p.sj}</p>
+              <p>${p.sj || '-'}</p>
             </div>
-            <div class="meta-block">
+            <div class="meta-item">
               <h4>Supplier</h4>
-              <p>${p.supplier}</p>
-            </div>
-            <div class="meta-block" style="margin-top: 10px;">
-              <h4>Pencatat (Staff Gudang)</h4>
-              <p>${p.staff}</p>
-            </div>
-            <div class="meta-block" style="margin-top: 10px;">
-              <h4>Penyetujui (Kepala Gudang)</h4>
-              <p>${p.kepala || '-'}</p>
+              <p>${p.supplier || '-'}</p>
             </div>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>BRAND</th>
-                <th>NAMA PRODUK</th>
-                <th style="text-align: right;">QTY MASUK</th>
-                <th>SATUAN</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(p.draftList || []).map(item => `
-                <tr>
-                  <td><strong>${item.brand}</strong></td>
-                  <td>${item.name}</td>
-                  <td style="text-align: right; font-weight: bold;">${item.qty}</td>
-                  <td>${item.uom}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          <div class="total-section">
-            <span style="font-weight: bold;">TOTAL VOLUME MASUK</span>
-            <span style="font-weight: 900; font-size: 16px;">${p.totalQty} Karton</span>
+          ${p.foto_sj_supplier ? `
+            <div class="img-container">
+              <img src="${p.foto_sj_supplier}" alt="Foto Surat Jalan Supplier" />
+            </div>
+          ` : `<div style="text-align:center; padding: 40px; color:#94A3B8;">Tidak ada lampiran foto Surat Jalan.</div>`}
+          <div class="footer">
+            Dokumen Digital Surat Jalan Supplier • Sistem GANA ERP
           </div>
-          <table style="width: 100%; margin-top: 60px; border: none; border-collapse: collapse;">
-            <tr>
-              <td style="width: 50%; text-align: center; border: none; padding: 0 40px; vertical-align: top;">
-                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 70px;">Penerima,</div>
-                <div style="border-top: 1px solid #94A3B8; padding-top: 8px; font-size: 13px; font-weight: bold; color: #1E293B;">${p.staff}</div>
-                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Staff Gudang</div>
-              </td>
-              <td style="width: 50%; text-align: center; border: none; padding: 0 40px; vertical-align: top;">
-                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 70px;">Mengetahui,</div>
-                <div style="border-top: 1px solid #94A3B8; padding-top: 8px; font-size: 13px; font-weight: bold; color: #1E293B;">${p.kepala || 'Kepala Gudang'}</div>
-                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Kepala Gudang</div>
-              </td>
-            </tr>
-          </table>
-          <script>window.print();</script>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
         </body>
       </html>
     `;
@@ -286,7 +249,7 @@ export default function DaftarPembelian() {
             <table className="w-full text-left whitespace-nowrap">
               <thead>
                 <tr className="bg-[#F8FAFC] text-[11px] font-bold text-[#64748B] uppercase tracking-wider border-b border-[#E2E8F0]">
-                  <th className="py-4 px-6">NO INVOICE MASUK</th>
+                  <th className="py-4 px-6">NO PENERIMAAN</th>
                   <th className="py-4 px-6">NO SURAT JALAN</th>
                   <th className="py-4 px-6">SUPPLIER</th>
                   <th className="py-4 px-6">TANGGAL MASUK</th>
@@ -343,7 +306,7 @@ export default function DaftarPembelian() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-5 border-b border-[#E2E8F0] bg-[#F8FAFC]">
-              <h3 className="font-bold text-[#1E293B]">Rincian Bukti Penerimaan Barang (BPB)</h3>
+              <h3 className="font-bold text-[#1E293B]">Rincian Penerimaan Barang</h3>
               <button onClick={() => setDetailModal({ isOpen: false, purchase: null })} className="text-[#64748B] hover:text-[#1E293B]">
                 <X className="w-5 h-5" />
               </button>
@@ -455,25 +418,27 @@ export default function DaftarPembelian() {
             </div>
             <div className="p-5 border-t border-[#E2E8F0] flex justify-end gap-2.5 bg-[#F8FAFC]">
               {detailModal.purchase.foto_sj_supplier && (
-                <a
-                  href={detailModal.purchase.foto_sj_supplier}
-                  download={`Foto_SJ_${detailModal.purchase.sj || detailModal.purchase.id}.jpg`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-5 py-2.5 bg-[#16A34A] text-white hover:bg-[#15803D] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
-                >
-                  <Download className="w-4 h-4" /> Unduh Foto
-                </a>
+                <>
+                  <a
+                    href={detailModal.purchase.foto_sj_supplier}
+                    download={`Foto_SJ_${detailModal.purchase.sj || detailModal.purchase.id}.jpg`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2.5 bg-[#16A34A] text-white hover:bg-[#15803D] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5 text-xs"
+                  >
+                    <Download className="w-4 h-4" /> Unduh JPG
+                  </a>
+                  <button
+                    onClick={() => handleDownloadPDF(detailModal.purchase)}
+                    className="px-4 py-2.5 bg-[#2563EB] text-white hover:bg-[#1D4ED8] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5 text-xs"
+                  >
+                    <FileText className="w-4 h-4" /> Unduh PDF
+                  </button>
+                </>
               )}
               <button
-                onClick={() => handlePrint(detailModal.purchase)}
-                className="px-5 py-2.5 bg-[#4F46E5] text-white hover:bg-[#4338CA] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
-              >
-                <Printer className="w-4 h-4" /> Cetak BPB
-              </button>
-              <button
                 onClick={() => setDetailModal({ isOpen: false, purchase: null })}
-                className="px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] font-semibold rounded-xl transition-colors shadow-sm"
+                className="px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] font-semibold rounded-xl transition-colors shadow-sm text-xs"
               >
                 Tutup
               </button>

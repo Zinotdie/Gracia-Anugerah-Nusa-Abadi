@@ -313,19 +313,19 @@ export default function InputStokMasuk() {
             
             <form onSubmit={handleAddToDraft} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-[#334155]">No. Surat Jalan / Invoice Supplier *</label>
+                <label className="text-sm font-semibold text-[#334155]">No. Surat Jalan *</label>
                 <input 
                   type="text" 
                   value={sjNumber}
                   onChange={e => setSjNumber(e.target.value)}
-                  placeholder="e.g. SJ-2026-001 / INV-2026-001" 
+                  placeholder="e.g. SJ-2026-001" 
                   className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:ring-1 focus:ring-[#4F46E5]"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-[#334155]">Upload Foto Surat Jalan / Invoice Supplier</label>
+                <label className="text-sm font-semibold text-[#334155]">Upload Foto Surat Jalan</label>
                 <div className="relative border border-dashed border-[#CBD5E1] rounded-xl p-3 bg-gray-50 flex items-center justify-between">
                   <input 
                     type="file" 
