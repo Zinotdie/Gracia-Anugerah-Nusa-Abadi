@@ -1,5 +1,5 @@
 import DashboardLayout from '../layouts/DashboardLayout';
-import { ShieldCheck, XCircle, CheckCircle2, Clock, Search, ChevronDown, ChevronUp, Eye, Camera, X } from 'lucide-react';
+import { ShieldCheck, XCircle, CheckCircle2, Clock, Search, ChevronDown, ChevronUp, Eye, Camera, X, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { purchaseService } from '../services/purchaseService';
 
@@ -110,7 +110,7 @@ export default function ApprovalStokMasuk() {
         </div>
 
         {/* Action Bar */}
-        <div className="flex flex-wrap items-center gap-4 bg-white p-3 rounded-xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0]">
+        <div className="flex flex-wrap items-center gap-4 bg-[#FFFFFF] p-3 rounded-xl shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-[#E2E8F0]">
           <div className="relative flex-1 min-w-[200px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-[#94A3B8]" />
@@ -234,12 +234,23 @@ export default function ApprovalStokMasuk() {
                         <Camera className="w-4 h-4 text-[#4F46E5]" />
                         <span className="text-xs font-bold text-[#1E293B]">Dokumentasi Foto Surat Jalan Supplier</span>
                       </div>
-                      <button
-                        onClick={() => setSelectedLightboxPhoto(item.foto_sj_supplier)}
-                        className="text-xs font-bold text-[#4F46E5] hover:underline flex items-center gap-1 focus:outline-none"
-                      >
-                        <Eye className="w-3.5 h-3.5" /> Lihat Foto
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedLightboxPhoto(item.foto_sj_supplier)}
+                          className="text-xs font-bold text-[#4F46E5] hover:text-[#3730A3] bg-[#EEF2FF] hover:bg-[#E0E7FF] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> Lihat Foto
+                        </button>
+                        <a
+                          href={item.foto_sj_supplier}
+                          download={`Foto_SJ_${item.sj || item.id}.jpg`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-bold text-[#16A34A] hover:text-[#15803D] bg-[#DCFCE7] hover:bg-[#BBF7D0] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" /> Unduh Foto
+                        </a>
+                      </div>
                     </div>
                   )}
 
@@ -291,12 +302,23 @@ export default function ApprovalStokMasuk() {
       {/* Fullscreen Lightbox Photo Viewer */}
       {selectedLightboxPhoto && (
         <div className="fixed inset-0 bg-black/95 z-[70] flex flex-col justify-center items-center p-4">
-          <button
-            onClick={() => setSelectedLightboxPhoto(null)}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all focus:outline-none"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-3">
+            <a
+              href={selectedLightboxPhoto}
+              download="Foto_Surat_Jalan_Supplier.jpg"
+              target="_blank"
+              rel="noreferrer"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
+            >
+              <Download className="w-4 h-4" /> Unduh Foto
+            </a>
+            <button
+              onClick={() => setSelectedLightboxPhoto(null)}
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all focus:outline-none"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           <img
             src={selectedLightboxPhoto}
             alt="Foto Surat Jalan Supplier"
