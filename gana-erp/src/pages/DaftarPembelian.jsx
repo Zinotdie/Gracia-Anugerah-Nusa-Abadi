@@ -108,11 +108,11 @@ export default function DaftarPembelian() {
     const printContent = `
       <html>
         <head>
-          <title>Invoice Pembelian - ${p.id}</title>
+          <title>Bukti Penerimaan Barang - ${p.id}</title>
           <style>
             body { font-family: sans-serif; padding: 40px; color: #1E293B; }
             .header { display: flex; justify-content: space-between; border-bottom: 2px solid #E2E8F0; padding-bottom: 20px; margin-bottom: 30px; }
-            .title { font-size: 24px; font-weight: bold; color: #4F46E5; }
+            .title { font-size: 22px; font-weight: bold; color: #4F46E5; }
             .metadata { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
             .meta-block h4 { margin: 0 0 5px 0; font-size: 11px; color: #64748B; text-transform: uppercase; }
             .meta-block p { margin: 0; font-size: 14px; font-weight: bold; }
@@ -127,7 +127,7 @@ export default function DaftarPembelian() {
         <body>
           <div class="header">
             <div>
-              <div class="title">INVOICE PEMBELIAN BARANG</div>
+              <div class="title">BUKTI PENERIMAAN BARANG (BPB)</div>
               <div style="font-size: 12px; color: #64748B; margin-top: 5px;">PT. GRACIA ANUGERAH NUSA ABADI</div>
             </div>
             <div style="text-align: right;">
@@ -339,7 +339,7 @@ export default function DaftarPembelian() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-5 border-b border-[#E2E8F0] bg-[#F8FAFC]">
-              <h3 className="font-bold text-[#1E293B]">Rincian Invoice Pembelian</h3>
+              <h3 className="font-bold text-[#1E293B]">Rincian Bukti Penerimaan Barang (BPB)</h3>
               <button onClick={() => setDetailModal({ isOpen: false, purchase: null })} className="text-[#64748B] hover:text-[#1E293B]">
                 <X className="w-5 h-5" />
               </button>
@@ -450,14 +450,28 @@ export default function DaftarPembelian() {
                 <span className="text-md font-black text-[#1E293B]">{detailModal.purchase.totalQty} Karton</span>
               </div>
             </div>
-            <div className="p-5 border-t border-[#E2E8F0] flex justify-end gap-2 bg-[#F8FAFC]">
+            <div className="p-5 border-t border-[#E2E8F0] flex justify-end gap-2.5 bg-[#F8FAFC]">
+              {detailModal.purchase.foto_sj_supplier && (
+                <a 
+                  href={detailModal.purchase.foto_sj_supplier} 
+                  download={`Foto_SJ_${detailModal.purchase.sj || detailModal.purchase.id}.jpg`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-5 py-2.5 bg-[#16A34A] text-white hover:bg-[#15803D] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
+                >
+                  <Download className="w-4 h-4" /> Unduh Foto SJ
+                </a>
+              )}
               <button 
                 onClick={() => handlePrint(detailModal.purchase)}
                 className="px-5 py-2.5 bg-[#4F46E5] text-white hover:bg-[#4338CA] font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
               >
-                <Printer className="w-4 h-4" /> Cetak Invoice
+                <Printer className="w-4 h-4" /> Cetak BPB
               </button>
-              <button onClick={() => setDetailModal({ isOpen: false, purchase: null })} className="px-5 py-2.5 bg-white border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] font-semibold rounded-xl transition-colors">
+              <button 
+                onClick={() => setDetailModal({ isOpen: false, purchase: null })} 
+                className="px-5 py-2.5 bg-[#DC2626] text-white hover:bg-[#B91C1C] font-semibold rounded-xl transition-colors shadow-sm"
+              >
                 Tutup
               </button>
             </div>
