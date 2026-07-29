@@ -211,12 +211,19 @@ export default function InputStokMasuk() {
       supplier: item.supplier || supplier
     }));
 
+    let numericSupplierId = 1;
+    if (supplier && (supplier.includes('Kixx') || supplier.includes('ABM'))) {
+      numericSupplierId = 2;
+    } else if (supplier && (supplier.includes('Petronas') || supplier.includes('PLI'))) {
+      numericSupplierId = 1;
+    }
+
     const receipt = {
       sj: sjNumber,
       no_sj_supplier: sjNumber,
       foto_sj_supplier: fotoSj,
       supplier: supplier,
-      id_supplier: supplier,
+      id_supplier: numericSupplierId,
       itemsCount: draftItems.length,
       totalQty: totalQty,
       items: itemsList,
