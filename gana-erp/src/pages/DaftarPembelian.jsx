@@ -313,45 +313,11 @@ export default function DaftarPembelian() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex justify-center gap-2">
-                        {(p.status === 'pending' || p.status === 'Menunggu' || p.status === 'Pending' || p.status === 'Draft') && (
-                          <>
-                            <button 
-                              onClick={() => {
-                                purchaseService.approveQC(p.id)
-                                  .then(() => { loadPurchases(); alert("Penerimaan barang disetujui & stok berhasil ditambahkan!"); })
-                                  .catch((err) => alert(err.response?.data?.message || "Gagal menyetujui QC."));
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16A34A] text-white hover:bg-[#15803D] transition-colors text-xs font-semibold"
-                              title="Setujui QC (Sesuai) & Tambah Stok"
-                            >
-                              <Check className="w-3.5 h-3.5" /> Approve QC
-                            </button>
-                            <button 
-                              onClick={() => {
-                                if (confirm(`Yakin ingin MENOLAK QC untuk penerimaan ${p.id}? Status akan diubah menjadi Cacat/Retur dan stok TIDAK akan bertambah.`)) {
-                                  purchaseService.rejectQC(p.id)
-                                    .then(() => { loadPurchases(); alert("Penerimaan barang ditolak / ditandai Cacat/Retur."); })
-                                    .catch((err) => alert(err.response?.data?.message || "Gagal menolak QC."));
-                                }
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EF4444] text-white hover:bg-[#DC2626] transition-colors text-xs font-semibold"
-                              title="Tolak QC (Cacat/Retur)"
-                            >
-                              <XCircle className="w-3.5 h-3.5" /> Tolak QC
-                            </button>
-                          </>
-                        )}
                         <button 
                           onClick={() => showDetail(p)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors text-xs font-semibold"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors text-xs font-semibold shadow-sm"
                         >
-                          <Eye className="w-4 h-4" /> Rincian
-                        </button>
-                        <button 
-                          onClick={() => handlePrint(p)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EEF2FF] text-[#4F46E5] hover:bg-[#E0E7FF] transition-colors text-xs font-semibold"
-                        >
-                          <Printer className="w-4 h-4" /> Cetak
+                          <Eye className="w-4 h-4 text-[#4F46E5]" /> Rincian
                         </button>
                       </div>
                     </td>
